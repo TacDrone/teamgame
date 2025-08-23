@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Scoreboard Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts: Press Start 2P & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #e0e0e0;
+        }
+        .font-pixel {
+            font-family: 'Press Start 2P', cursive;
+        }
+        .panel {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .scan-button {
+            transition: all 0.3s ease;
+        }
+        .scan-button:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .team-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+            font-weight: 700;
+            width: 100%;
+            padding-bottom: 0.5rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .team-input:focus {
+            border-bottom-color: #fff;
+        }
+        .color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .color-picker::-webkit-color-swatch {
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .color-picker::-moz-color-swatch {
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .manual-score-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-align: center;
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            -moz-appearance: textfield; /* Firefox */
+        }
+        .manual-score-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+        .manual-score-input:focus { border-color: #fff; }
+        .manual-score-input::-webkit-outer-spin-button,
+        .manual-score-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        #gamble-reel {
+            text-shadow: 0 0 10px #facc15, 0 0 20px #facc15;
+        }
+        
+        @keyframes switch-color {
+          0%, 49.9% {
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+          }
+          50%, 99.9% {
+            color: var(--team-color, #ffffff);
+            text-shadow: 0 0 20px var(--team-color, #ffffff);
+          }
+          100% {
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+          }
+        }
+        .score-blinking {
+          animation: switch-color 2s infinite steps(1, end);
+        }
+        
+        @keyframes event-fade-in {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .event-banner {
+            animation: event-fade-in 0.5s ease-out forwards;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .title-char {
+            display: inline-block;
+            animation: wave 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-4">
+            <h1 id="main-title" class="font-pixel text-3xl sm:text-4xl text-yellow-400 tracking-widest" style="text-shadow: 0 0 10px #facc15;">
+                <!-- Title will be generated by JS -->
+            </h1>
+            <p class="text-gray-300 mt-2 text-sm sm:text-base">สงครามไร้การป้องกัน</p>
+        </header>
+
+        <!-- Top Controls Section -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+            <div class="flex gap-4">
+                <button id="summary-button" class="panel p-4 h-full bg-purple-600 hover:bg-purple-700 rounded-lg transition flex-shrink-0">
+                    <div class="flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-trophy text-2xl"></i>
+                        <span class="font-bold">สรุป</span>
+                    </div>
+                </button>
+                <button id="reset-game-button" class="panel p-4 h-full bg-red-800 hover:bg-red-700 rounded-lg transition flex-shrink-0">
+                    <div class="flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-power-off text-2xl"></i>
+                        <span class="font-bold">รีเซ็ต</span>
+                    </div>
+                </button>
+            </div>
+             <!-- Bank Section -->
+            <div class="panel p-4 text-center">
+                <h3 class="text-sm font-bold text-green-400">💰 ยอดเงินธนาคาร 💰</h3>
+                <p id="bank-score" class="font-pixel text-xl text-green-300">1,000,000,000,000</p>
+            </div>
+            <div class="panel p-2 flex gap-2">
+                 <button id="troll-robinhood" class="px-3 py-2 bg-green-600/50 hover:bg-green-600/80 rounded-md transition" title="โรบินฮู้ด"><i class="fa-solid fa-user-secret"></i></button>
+                 <button id="troll-blind-bet" class="px-3 py-2 bg-yellow-600/50 hover:bg-yellow-600/80 rounded-md transition" title="เดิมพันตาบอด"><i class="fa-solid fa-eye-slash"></i></button>
+                 <button id="troll-random" class="px-3 py-2 bg-red-600/50 hover:bg-red-600/80 rounded-md transition" title="โชคชะตา"><i class="fa-solid fa-shuffle"></i></button>
+            </div>
+        </div>
+
+
+        <!-- Special Event Banner -->
+        <div id="event-banner-container" class="min-h-[60px] mb-6"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            <!-- Team 1 Panel -->
+            <div id="team1-panel" class="panel p-6 flex flex-col items-center space-y-4" style="border-color: #38bdf8;">
+                <div class="w-full flex justify-center items-center gap-2">
+                    <input type="text" id="team1-name" value="Blue Team" class="team-input" style="color: #38bdf8;">
+                    <span id="team1-leader-indicator" class="text-yellow-400 text-2xl"></span>
+                    <input type="color" id="team1-color" value="#38bdf8" class="color-picker">
+                </div>
+                <p class="font-pixel text-3xl sm:text-4xl md:text-5xl font-bold text-white break-all" id="team1-score">100,000</p>
+                <p class="text-gray-400 mt-2">POINTS</p>
+                <div id="team1-debt-display" class="text-red-500 font-bold text-sm min-h-[20px]"></div>
+                <div class="w-full max-w-xs pt-2 space-y-2">
+                    <input type="number" id="team1-manual-score" class="manual-score-input" placeholder="Add/Sub Score & Enter">
+                    <div class="flex gap-2">
+                         <input type="number" id="team1-buy-amount" class="manual-score-input w-1/3" placeholder="Qty">
+                         <button class="w-2/3 py-2 text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 transition text-white" onclick="handleBuyCards(1)">
+                            <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="w-full py-2 text-sm font-bold rounded-lg bg-yellow-500 hover:bg-yellow-600 transition text-gray-900" onclick="handleGamble(1)">
+                            <i class="fa-solid fa-dice"></i> เดิมพัน
+                        </button>
+                        <div id="team1-loan-container">
+                            <button class="w-full py-2 text-sm font-bold rounded-lg bg-green-500 hover:bg-green-600 transition text-gray-900" onclick="handleLoan(1)">
+                                <i class="fa-solid fa-hand-holding-dollar"></i> กู้ยืม
+                            </button>
+                        </div>
+                    </div>
+                     <button class="w-full py-2 text-sm font-bold rounded-lg bg-gray-800 hover:bg-gray-700 border border-yellow-500 transition text-yellow-400" onclick="handleBlackMarket(1)">
+                        <i class="fa-solid fa-store"></i> ตลาดมืด (250k)
+                    </button>
+                </div>
+                <button class="scan-button w-full mt-auto pt-6 py-4 font-pixel text-xl rounded-lg" style="background-color: #38bdf8; box-shadow: 0 0 15px #38bdf8;" onclick="openScanner(1)">
+                    <i class="fa-solid fa-qrcode"></i> SCAN FOR TEAM 1
+                </button>
+            </div>
+
+            <!-- Team 2 Panel -->
+            <div id="team2-panel" class="panel p-6 flex flex-col items-center space-y-4" style="border-color: #ec4899;">
+                <div class="w-full flex justify-center items-center gap-2">
+                    <input type="text" id="team2-name" value="Pink Team" class="team-input" style="color: #ec4899;">
+                    <span id="team2-leader-indicator" class="text-yellow-400 text-2xl"></span>
+                    <input type="color" id="team2-color" value="#ec4899" class="color-picker">
+                </div>
+                <p class="font-pixel text-3xl sm:text-4xl md:text-5xl font-bold text-white break-all" id="team2-score">100,000</p>
+                <p class="text-gray-400 mt-2">POINTS</p>
+                 <div id="team2-debt-display" class="text-red-500 font-bold text-sm min-h-[20px]"></div>
+                <div class="w-full max-w-xs pt-2 space-y-2">
+                    <input type="number" id="team2-manual-score" class="manual-score-input" placeholder="Add/Sub Score & Enter">
+                    <div class="flex gap-2">
+                         <input type="number" id="team2-buy-amount" class="manual-score-input w-1/3" placeholder="Qty">
+                         <button class="w-2/3 py-2 text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 transition text-white" onclick="handleBuyCards(2)">
+                            <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
+                        </button>
+                    </div>
+                     <div class="grid grid-cols-2 gap-2">
+                        <button class="w-full py-2 text-sm font-bold rounded-lg bg-yellow-500 hover:bg-yellow-600 transition text-gray-900" onclick="handleGamble(2)">
+                            <i class="fa-solid fa-dice"></i> เดิมพัน
+                        </button>
+                        <div id="team2-loan-container">
+                             <button class="w-full py-2 text-sm font-bold rounded-lg bg-green-500 hover:bg-green-600 transition text-gray-900" onclick="handleLoan(2)">
+                                <i class="fa-solid fa-hand-holding-dollar"></i> กู้ยืม
+                            </button>
+                        </div>
+                    </div>
+                     <button class="w-full py-2 text-sm font-bold rounded-lg bg-gray-800 hover:bg-gray-700 border border-yellow-500 transition text-yellow-400" onclick="handleBlackMarket(2)">
+                        <i class="fa-solid fa-store"></i> ตลาดมืด (250k)
+                    </button>
+                </div>
+                <button class="scan-button w-full mt-auto pt-6 py-4 font-pixel text-xl rounded-lg" style="background-color: #ec4899; box-shadow: 0 0 15px #ec4899;" onclick="openScanner(2)">
+                    <i class="fa-solid fa-qrcode"></i> SCAN FOR TEAM 2
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <div class="panel p-6">
+                <h3 class="font-pixel text-xl mb-4 text-center text-yellow-400">BATTLE LOG</h3>
+                <ul id="chaos-feed" class="space-y-4 h-[250px] overflow-y-auto custom-scrollbar pr-2"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="scanner-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
+        <div class="modal-content panel p-6 md:p-8 text-center transform scale-95 flex flex-col items-center">
+            <h3 id="modal-title" class="font-pixel text-xl text-white mb-4">SCAN QR CODE</h3>
+            <div id="reader" class="w-64 h-64 md:w-80 md:h-80"></div>
+            <button id="close-scanner-button" class="mt-6 bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition">
+                Cancel
+            </button>
+        </div>
+    </div>
+    
+    <div id="alert-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
+        <div class="modal-content panel p-8 text-center transform scale-95 flex flex-col items-center max-w-sm">
+            <div id="alert-icon" class="text-5xl mb-4"></div>
+            <h3 id="alert-title" class="font-pixel text-2xl text-white mb-2"></h3>
+            <p id="alert-message" class="text-gray-300 mb-6"></p>
+            <div id="alert-buttons" class="flex gap-4">
+                <button id="close-alert-button" class="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="gamble-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
+        <div class="modal-content panel p-8 text-center transform scale-95 flex flex-col items-center max-w-md w-full">
+            <h3 class="font-pixel text-2xl text-white mb-4">🎲 เดิมพัน 🎲</h3>
+            <div id="gamble-reel" class="font-pixel text-6xl text-yellow-400 my-8">000000</div>
+            <div id="gamble-result" class="hidden">
+                 <p class="text-gray-300 mb-6"></p>
+                 <button id="close-gamble-button" class="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition">ปิด</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="summary-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
+        <div class="modal-content panel p-8 text-center transform scale-95 flex flex-col items-center max-w-lg w-full">
+            <h3 class="font-pixel text-2xl text-white mb-6">🏆 สรุปผล 🏆</h3>
+            <div id="summary-winner" class="mb-4"></div>
+            <div id="summary-loser" class="mb-6"></div>
+            <div id="summary-punishment" class="border-t border-gray-700 pt-6"></div>
+            <button id="close-summary-button" class="mt-8 bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition hidden">ปิด</button>
+        </div>
+    </div>
+
+
+    <script>
+        const teams = {
+            1: { name: 'Blue Team', color: '#38bdf8', score: 100000, debt: null },
+            2: { name: 'Pink Team', color: '#ec4899', score: 100000, debt: null }
+        };
+        
+        let bankScore = 1000000000000;
+
+        let activeTeam = null;
+        const feedEvents = [];
+        let html5QrCode = null;
+        let lastCardAction = { teamId: null, barcode: null };
+        
+        let audioCtx;
+        let currentEvent = null;
+        
+        const elements = {
+            mainTitle: document.getElementById('main-title'),
+            team1: { panel: document.getElementById('team1-panel'), name: document.getElementById('team1-name'), color: document.getElementById('team1-color'), score: document.getElementById('team1-score'), manualScore: document.getElementById('team1-manual-score'), leaderIndicator: document.getElementById('team1-leader-indicator'), debtDisplay: document.getElementById('team1-debt-display'), loanContainer: document.getElementById('team1-loan-container'), buyAmountInput: document.getElementById('team1-buy-amount'), button: document.querySelector('[onclick="openScanner(1)"]') },
+            team2: { panel: document.getElementById('team2-panel'), name: document.getElementById('team2-name'), color: document.getElementById('team2-color'), score: document.getElementById('team2-score'), manualScore: document.getElementById('team2-manual-score'), leaderIndicator: document.getElementById('team2-leader-indicator'), debtDisplay: document.getElementById('team2-debt-display'), loanContainer: document.getElementById('team2-loan-container'), buyAmountInput: document.getElementById('team2-buy-amount'), button: document.querySelector('[onclick="openScanner(2)"]') },
+            feed: document.getElementById('chaos-feed'),
+            scannerModal: document.getElementById('scanner-modal'),
+            scannerModalContent: document.getElementById('scanner-modal').querySelector('.modal-content'),
+            scannerModalTitle: document.getElementById('modal-title'),
+            closeScannerButton: document.getElementById('close-scanner-button'),
+            reader: document.getElementById('reader'),
+            summaryButton: document.getElementById('summary-button'),
+            resetGameButton: document.getElementById('reset-game-button'),
+            trollRobinhoodButton: document.getElementById('troll-robinhood'),
+            trollBlindBetButton: document.getElementById('troll-blind-bet'),
+            trollRandomButton: document.getElementById('troll-random'),
+            alertModal: document.getElementById('alert-modal'),
+            alertIcon: document.getElementById('alert-icon'),
+            alertTitle: document.getElementById('alert-title'),
+            alertMessage: document.getElementById('alert-message'),
+            alertButtons: document.getElementById('alert-buttons'),
+            closeAlertButton: document.getElementById('close-alert-button'),
+            gambleModal: document.getElementById('gamble-modal'),
+            gambleReel: document.getElementById('gamble-reel'),
+            gambleResult: document.getElementById('gamble-result'),
+            closeGambleButton: document.getElementById('close-gamble-button'),
+            eventBannerContainer: document.getElementById('event-banner-container'),
+            summaryModal: document.getElementById('summary-modal'),
+            summaryWinner: document.getElementById('summary-winner'),
+            summaryLoser: document.getElementById('summary-loser'),
+            summaryPunishment: document.getElementById('summary-punishment'),
+            closeSummaryButton: document.getElementById('close-summary-button'),
+            bankScore: document.getElementById('bank-score'),
+        };
+        
+        const cardDatabase = {
+            'ADD_12000': { emoji: '💰', name: 'เงินก้นถุง', description: 'ได้รับ 12,000 คะแนน' },
+            'ADD_14000': { emoji: '💵', name: 'เงินเดือนออก', description: 'ได้รับ 14,000 คะแนน' },
+            'ADD_20000': { emoji: '🤑', name: 'ถูกหวย', description: 'ได้รับ 20,000 คะแนน' },
+            'ADD_40000': { emoji: '🏦', name: 'โบนัสใหญ่', description: 'ได้รับ 40,000 คะแนน' },
+            'ADD_RANDOM_10K_20K': { emoji: '🎲', name: 'สุ่มแต้มบุญ', description: 'สุ่มคะแนน 10,000-20,000' },
+            'ADD_RANDOM_25K_50K': { emoji: '🎰', name: 'แจ็คพอต', description: 'สุ่มคะแนน 25,000-50,000' },
+            'GAIN_5_PERCENT_OWN': { emoji: '📈', name: 'ดอกเบี้ยทบต้น', description: 'โบนัส 5% จากคะแนนตัวเอง' },
+            'GAIN_10_PERCENT_OWN': { emoji: '🚀', name: 'พุ่งทะยาน', description: 'โบนัส 10% จากคะแนนตัวเอง' },
+            'REVIVE_TO_15000': { emoji: '❤️‍🩹', name: 'ชุบชีวิต', description: 'ถ้าคะแนนติดลบ จะกลับมาที่ 15,000' },
+            'FLAT_BONUS_15555': { emoji: '😂', name: 'เลขสวย', description: 'ได้รับ 15,555 คะแนน' },
+            'SCORE_EQUALIZER_UP': { emoji: '⚖️', name: 'คะแนนปลอบใจ', description: 'ลดช่องว่างคะแนนกับทีมที่นำอยู่' },
+            'INTEREST_PAYOUT': { emoji: '🪙', name: 'เงินปันผล', description: 'รับดอกเบี้ย 1% จากคะแนนที่มี' },
+            'LUCKY_FIND_17777': { emoji: '🍀', name: 'โชคดีสี่แฉก', description: 'ได้รับ 17,777 คะแนน' },
+            'BIG_BOOST_50000': { emoji: '💎', name: 'ขุมทรัพย์', description: 'ได้รับโบนัสก้อนโต 50,000 คะแนน' },
+            'ALL_TEAMS_ADD_15000': { emoji: '🤝', name: 'สันติภาพ', description: 'ทุกทีมได้รับ 15,000 คะแนน' },
+            'SCORE_RESET_TO_AVERAGE': { emoji: '🔄', name: 'ปรับสมดุล', description: 'คะแนนทุกทีมถูกปรับให้เท่ากัน' },
+            'PEACE_TREATY': { emoji: '🕊️', name: 'สนธิสัญญาสงบศึก', description: 'ล้างสถานะไม่ดีของทุกทีม' },
+            'STEAL_20000': { emoji: '👺', name: 'มือไว', description: 'ขโมย 20,000 คะแนน' },
+            'STEAL_40000': { emoji: '🥷', name: 'ปล้นสะดม', description: 'ปล้นครั้งใหญ่ 40,000 คะแนน' },
+            'STEAL_RANDOM_10K_20K': { emoji: '❓', name: 'ล้วงกระเป๋า', description: 'สุ่มขโมย 10,000-20,000 คะแนน' },
+            'STEAL_RANDOM_25K_50K': { emoji: '‼️', name: 'ทุบกระปุก', description: 'สุ่มขโมย 25,000-50,000 คะแนน' },
+            'STEAL_10_PERCENT': { emoji: '🧛', name: 'ดูดพลัง', description: 'ดูดพลัง 10% จากคะแนนศัตรู' },
+            'CUT_SCORE_10_PERCENT': { emoji: '💥', name: 'ทำลายล้าง', description: 'ทำลาย 10% ของคะแนนศัตรู' },
+            'CUT_SCORE_20_PERCENT': { emoji: '💣', name: 'ระเบิดพลีชีพ', description: 'ทำลาย 20% ของคะแนนศัตรู' },
+            'SCORE_SWAP_CHAOS': { emoji: '🎭', name: 'พลิกชะตา', description: 'สลับคะแนนกับทีมตรงข้าม' },
+            'RESET_OPPONENT_TO_25000': { emoji: '📉', name: 'ล้างบาง', description: 'รีเซ็ตคะแนนศัตรูเหลือ 25,000' },
+            'TAX_THE_RICH': { emoji: '🧐', name: 'ภาษีคนรวย', description: 'เก็บภาษีจากทีมที่คะแนนนำอยู่' },
+            'LEAKY_WALLET': { emoji: '💧', name: 'กระเป๋ารั่ว', description: 'ทำให้คะแนนศัตรูรั่วไหล 2 นาที' },
+            'SCORE_BOMB_35K': { emoji: '☄️', name: 'อุกกาบาต', description: 'ศัตรูเสีย 35,000 คะแนน' },
+            'PLAGUE': { emoji: '🦠', name: 'โรคระบาด', description: 'ศัตรูเสียคะแนนทันทีและต่อเนื่อง' },
+            'CHAOS_SWAP_LAST_DIGITS': { emoji: '✍️', name: 'เด็กฝึกงาน', description: 'สลับเลขท้ายสองตัวของคะแนน' },
+            'CHAOS_INFLATION_HALVE_SCORES': { emoji: '💸', name: 'ค่าเงินเฟ้อ', description: 'คะแนนทุกทีมถูกหารสอง' },
+            'ATTACK_TAX_THE_LEADER': { emoji: '🧾', name: 'สรรพากรลง', description: 'ทีมที่นำอยู่เสีย 30% ของคะแนน' },
+            'CHAOS_DEJA_VU': { emoji: '🔮', name: 'เดจาวู', description: 'ผลของการ์ดใบที่แล้วเกิดซ้ำ' },
+            'CHAOS_PUBLIC_HOLIDAY_1MIN': { emoji: '🏖️', name: 'วันหยุด', description: 'ห้ามใช้การ์ด 1 นาที' },
+            'SUPPORT_GAMBLE_30K': { emoji: '🎲', name: 'วัดดวง', description: 'เดิมพัน 30,000 ลุ้นรับ 60,000' },
+            'ATTACK_IDENTITY_THEFT_2MIN': { emoji: '🎭', name: 'สวมรอย', description: 'ขโมยคะแนนที่ศัตรูได้รับ 2 นาที' },
+            'CHAOS_BLACK_HOLE': { emoji: '⚫', name: 'หลุมดำ', description: 'การ์ดใบถัดไปไร้ผล' },
+            'ATTACK_RANSOMWARE': { emoji: '🔒', name: 'ไวรัสเรียกค่าไถ่', description: 'ล็อคการรับแต้มของศัตรู' },
+            'ATTACK_UNLUCKY_GIFT': { emoji: '🎁', name: 'ของขวัญกวนๆ', description: 'เราเสีย 10,000 ศัตรูได้ 5,000' },
+            'PUNISH_JUMPING_JACKS': { emoji: '🤸', name: 'ออกกำลัง!', description: 'ทีมตรงข้ามต้องกระโดดตบ' },
+            'PUNISH_PUSH_UPS': { emoji: '💪', name: 'เบ่งกล้าม!', description: 'ทีมตรงข้ามต้องดันพื้น' },
+            'PUNISH_PLANK': { emoji: '🧘', name: 'ทรงตัว!', description: 'ทีมตรงข้ามต้องแพลงค์' },
+            'PUNISH_SPIN': { emoji: '😵‍💫', name: 'โลกหมุน!', description: 'ทีมตรงข้ามต้องปั่นจิ้งหรีด' },
+            'PUNISH_FREESTYLE': { emoji: '🕺', name: 'แดนซ์!', description: 'ทีมตรงข้ามต้องออกกำลังกายท่าฟรีสไตล์' },
+            // Legendary Cards
+            'LEGEND_GOLDEN_AGE': { emoji: '🌟', name: 'ยุคทอง', description: 'ทีมของคุณได้รับ 500,000 คะแนนทันที!' },
+            'LEGEND_ECONOMIC_COLLAPSE': { emoji: '📉', name: 'วิกฤตเศรษฐกิจ', description: 'คะแนนของทีมตรงข้ามถูกหาร 2 ทันที!' },
+            'LEGEND_DEBT_FORGIVENESS': { emoji: '📜', name: 'ล้างหนี้', description: 'หนี้ของคุณจะถูกโอนไปให้ทีมตรงข้าม!' },
+            'LEGEND_KINGMAKER': { emoji: '👑', name: 'ผู้สร้างราชา', description: 'คะแนนของคุณจะเท่ากับทีมที่นำอยู่ +1 คะแนน!' },
+            'LEGEND_REVOLUTION': { emoji: '✊', name: 'ปฏิวัติ', description: 'ทีมที่คะแนนน้อยกว่าขโมย 50% ของคะแนนจากทีมที่นำ!' },
+            'LEGEND_ZERO_SUM': { emoji: '💥', name: 'เกมศูนย์', description: 'รีเซ็ตคะแนนของทีมตรงข้ามให้เหลือ 0!' },
+            'LEGEND_DIVINE_INTERVENTION': { emoji: '🙏', name: 'สวรรค์เมตตา', description: 'ได้รับ 1,000,000 คะแนน!' },
+            'LEGEND_PANDORAS_BOX': { emoji: ' Pandora\'s Box', name: 'กล่องแพนโดร่า', description: 'สุ่มการ์ดในตำนานใส่ทั้งสองทีม!' },
+            'LEGEND_MIRROR_MATCH': { emoji: '👯', name: 'ภาพสะท้อน', description: 'คะแนนของทีมตรงข้ามจะถูกปรับให้เท่ากับทีมเรา!' },
+            'LEGEND_DOOMSDAY': { emoji: '☄️', name: 'วันสิ้นโลก', description: 'ทั้งสองทีมเสีย 50% ของคะแนน แต่ทีมตรงข้ามเสียเพิ่มอีก 100,000!' },
+        };
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        function playSound(type, duration = 1) {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            switch(type) {
+                case 'scan': oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, now); gainNode.gain.setValueAtTime(0.5, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2); break;
+                case 'positive': oscillator.type = 'triangle'; oscillator.frequency.setValueAtTime(523.25, now); oscillator.frequency.linearRampToValueAtTime(1046.50, now + 0.1); gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2); break;
+                case 'negative': oscillator.type = 'sawtooth'; oscillator.frequency.setValueAtTime(440, now); oscillator.frequency.linearRampToValueAtTime(220, now + 0.2); gainNode.gain.setValueAtTime(0.4, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3); break;
+                case 'gamble_reel':
+                    oscillator.type = 'square';
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    const notes = [261, 293, 329, 349, 392, 440, 493, 523];
+                    for(let i = 0; i < duration * 10; i++) {
+                        oscillator.frequency.setValueAtTime(notes[Math.floor(Math.random() * notes.length)], now + i * 0.1);
+                    }
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                    break;
+                case 'end': oscillator.type = 'sawtooth'; gainNode.gain.setValueAtTime(0.5, now); oscillator.frequency.setValueAtTime(880, now); oscillator.frequency.setValueAtTime(440, now + 0.1); oscillator.frequency.setValueAtTime(880, now + 0.2); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5); break;
+            }
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        }
+
+        function updateLeaderIndicator() {
+            elements.team1.leaderIndicator.innerHTML = '';
+            elements.team2.leaderIndicator.innerHTML = '';
+            if (teams[1].score > teams[2].score) {
+                elements.team1.leaderIndicator.innerHTML = '<i class="fa-solid fa-crown animate-bounce"></i>';
+            } else if (teams[2].score > teams[1].score) {
+                elements.team2.leaderIndicator.innerHTML = '<i class="fa-solid fa-crown animate-bounce"></i>';
+            }
+        }
+
+        function updateBankUI() {
+            elements.bankScore.textContent = bankScore.toLocaleString();
+        }
+
+        function updateTeamUI(teamId) {
+            const teamData = teams[teamId];
+            const teamElements = elements[`team${teamId}`];
+            teamElements.name.value = teamData.name;
+            teamElements.name.style.color = teamData.color;
+            teamElements.color.value = teamData.color;
+            teamElements.score.innerText = teamData.score.toLocaleString();
+            teamElements.panel.style.borderColor = teamData.color;
+            teamElements.panel.style.boxShadow = `0 0 20px ${teamData.color}40`;
+            teamElements.button.style.backgroundColor = teamData.color;
+            teamElements.button.style.boxShadow = `0 0 15px ${teamData.color}`;
+            
+            teamElements.score.style.setProperty('--team-color', teamData.color);
+            if (!teamElements.score.classList.contains('score-blinking')) {
+                teamElements.score.classList.add('score-blinking');
+            }
+
+            if(teamData.debt) {
+                teamElements.debtDisplay.textContent = `หนี้สิน: ${teamData.debt.amount.toLocaleString()}`;
+                teamElements.loanContainer.innerHTML = `<button class="w-full py-2 text-sm font-bold rounded-lg bg-orange-500 hover:bg-orange-600 transition text-gray-900" onclick="handleLoan(${teamId})"><i class="fa-solid fa-cash-register"></i> ชำระหนี้</button>`;
+            } else {
+                teamElements.debtDisplay.textContent = '';
+                teamElements.loanContainer.innerHTML = `<div class="flex gap-1"><input type="number" id="team${teamId}-loan-amount" class="manual-score-input w-2/3" placeholder="จำนวนเงิน"><button class="w-1/3 py-2 text-sm font-bold rounded-lg bg-green-500 hover:bg-green-600 transition text-gray-900" onclick="handleLoan(${teamId})"><i class="fa-solid fa-hand-holding-dollar"></i></button></div>`;
+            }
+            updateLeaderIndicator();
+        }
+
+        function renderBattleLog() {
+            elements.feed.innerHTML = '';
+            feedEvents.slice(0, 10).forEach(event => {
+                const teamData = teams[event.teamId] || { color: '#ffffff', name: 'System' };
+                const li = document.createElement('li');
+                li.className = 'flex items-start space-x-3 text-sm';
+                li.innerHTML = `<i class="fa-solid fa-star mt-1" style="color: ${teamData.color};"></i><p class="text-gray-300">${event.teamId ? `<strong style="color: ${teamData.color};">${teamData.name}</strong>` : ''} ${event.text}</p>`;
+                elements.feed.appendChild(li);
+            });
+        }
+
+        function addLog(teamId, text) { feedEvents.unshift({ teamId, text }); if (feedEvents.length > 20) feedEvents.pop(); renderBattleLog(); }
+        
+        function performCardAction(teamId, barcodeResult, isDejaVu = false) {
+            let opponentId = teamId === 1 ? 2 : 1;
+            let logText = '';
+            let soundType = 'positive';
+            let amount = 0;
+            
+            const isAttackCard = barcodeResult.startsWith('STEAL_') || barcodeResult.startsWith('CUT_') || barcodeResult.startsWith('RESET_') || barcodeResult.includes('BOMB') || barcodeResult.startsWith('PUNISH_') || barcodeResult.startsWith('LEGEND_');
+            if (currentEvent === 'BLOOD_MOON' && isAttackCard) {
+                logText += '[BLOOD MOON!] ';
+            }
+
+            switch (barcodeResult) {
+                case 'ADD_12000': teams[teamId].score += 12000; bankScore -= 12000; logText = `ได้รับ 12,000 คะแนน`; break;
+                case 'ADD_14000': teams[teamId].score += 14000; bankScore -= 14000; logText = `ได้รับ 14,000 คะแนน`; break;
+                case 'ADD_20000': teams[teamId].score += 20000; bankScore -= 20000; logText = `ได้รับ 20,000 คะแนน`; break;
+                case 'ADD_40000': teams[teamId].score += 40000; bankScore -= 40000; logText = `ได้รับโบนัสใหญ่ 40,000 คะแนน!`; break;
+                case 'ADD_RANDOM_10K_20K': const r1 = Math.floor(Math.random() * 10001) + 10000; teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break;
+                case 'ADD_RANDOM_25K_50K': const r2 = Math.floor(Math.random() * 25001) + 25000; teams[teamId].score += r2; bankScore -= r2; logText = `สุ่มได้โบนัสใหญ่ ${r2.toLocaleString()} คะแนน!`; break;
+                case 'GAIN_5_PERCENT_OWN': const g1 = Math.floor(teams[teamId].score * 0.05); teams[teamId].score += g1; bankScore -= g1; logText = `ได้รับโบนัส 5% เป็นคะแนน ${g1.toLocaleString()} แต้ม`; break;
+                case 'GAIN_10_PERCENT_OWN': const g2 = Math.floor(teams[teamId].score * 0.10); teams[teamId].score += g2; bankScore -= g2; logText = `ได้รับโบนัส 10% เป็นคะแนน ${g2.toLocaleString()} แต้ม`; break;
+                case 'REVIVE_TO_15000': if (teams[teamId].score <= 0) { teams[teamId].score = 15000; bankScore -= 15000; logText = `คะแนนฟื้นกลับมาที่ 15,000!`; } else { logText = `ใช้การ์ดชุบชีวิต แต่ไม่เกิดอะไรขึ้น`; soundType = 'negative';} break;
+                case 'FLAT_BONUS_15555': teams[teamId].score += 15555; bankScore -= 15555; logText = `ได้รับเลขสวย 15,555 คะแนน!`; break;
+                case 'SCORE_EQUALIZER_UP': if (teams[teamId].score < teams[opponentId].score) { const diff = Math.floor((teams[opponentId].score - teams[teamId].score) / 2); teams[teamId].score += diff; bankScore -= diff; logText = `ได้รับคะแนนปลอบใจ ${diff.toLocaleString()} แต้ม!`; } else { logText = `ใช้การ์ดปลอบใจ แต่คะแนนนำอยู่แล้ว`; soundType = 'negative'; } break;
+                case 'INTEREST_PAYOUT': const interest = Math.floor(teams[teamId].score * 0.01); teams[teamId].score += interest; bankScore -= interest; logText = `ได้รับดอกเบี้ย 1% เป็นคะแนน ${interest.toLocaleString()} แต้ม`; break;
+                case 'LUCKY_FIND_17777': teams[teamId].score += 17777; bankScore -= 17777; logText = `ได้รับเลขนำโชค 17,777 คะแนน!`; break;
+                case 'BIG_BOOST_50000': teams[teamId].score += 50000; bankScore -= 50000; logText = `ได้รับโบนัสก้อนโต 50,000 คะแนน!`; break;
+                case 'ALL_TEAMS_ADD_15000': teams[1].score += 15000; teams[2].score += 15000; bankScore -= 30000; teamId = null; logText = `ทุกทีมได้รับ 15,000 คะแนน!`; break;
+                case 'SCORE_RESET_TO_AVERAGE': const currentTotal = teams[1].score + teams[2].score; const avg = Math.floor(currentTotal / 2); bankScore += currentTotal - (avg*2); teams[1].score = avg; teams[2].score = avg; teamId = null; logText = `คะแนนของทุกทีมถูกปรับมาอยู่ที่ ${avg.toLocaleString()}!`; soundType = 'negative'; break;
+                case 'PEACE_TREATY': teamId = null; logText = `สนธิสัญญาสงบศึก!`; break;
+                case 'STEAL_20000': amount = currentEvent === 'BLOOD_MOON' ? 30000 : 20000; teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'STEAL_40000': amount = currentEvent === 'BLOOD_MOON' ? 60000 : 40000; teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ปล้นครั้งใหญ่! ขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'STEAL_RANDOM_10K_20K': amount = Math.floor(Math.random() * 10001) + 10000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `สุ่มขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'STEAL_RANDOM_25K_50K': amount = Math.floor(Math.random() * 25001) + 25000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `สุ่มขโมยครั้งใหญ่ ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'STEAL_10_PERCENT': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ดูดพลัง (${amount.toLocaleString()} คะแนน) จากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'CUT_SCORE_10_PERCENT': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[opponentId].score -= amount; bankScore += amount; logText += `ทำลายคะแนน (${amount.toLocaleString()} แต้ม) ของทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'CUT_SCORE_20_PERCENT': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.30 : 0.20)); teams[opponentId].score -= amount; bankScore += amount; logText += `ทำลายคะแนน (${amount.toLocaleString()} แต้ม) ของทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'SCORE_SWAP_CHAOS': [teams[teamId].score, teams[opponentId].score] = [teams[opponentId].score, teams[teamId].score]; logText = `พลิกชะตา! สลับคะแนนกับทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case 'RESET_OPPONENT_TO_25000': if (teams[opponentId].score > 25000) { bankScore += teams[opponentId].score - 25000; teams[opponentId].score = 25000; logText = `คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตกลับไปที่ 25,000!`; soundType = 'negative';} else { logText = `พยายามรีเซ็ตคะแนน แต่ไม่สำเร็จ`; } break;
+                case 'TAX_THE_RICH': if (teams[opponentId].score > teams[teamId].score) { amount = Math.floor((teams[opponentId].score - teams[teamId].score) * (currentEvent === 'BLOOD_MOON' ? 0.225 : 0.15)); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `เก็บภาษีคนรวย! ได้รับ ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; } else { logText = `พยายามเก็บภาษี แต่คะแนนน้อยกว่า`; soundType = 'negative'; } break;
+                case 'LEAKY_WALLET': logText = `ทีม ${teams[opponentId].name} โดนคำสาปกระเป๋ารั่ว!`; soundType = 'negative'; break;
+                case 'SCORE_BOMB_35K': amount = currentEvent === 'BLOOD_MOON' ? 52500 : 35000; teams[opponentId].score -= amount; bankScore += amount; logText += `ทิ้งระเบิดคะแนน! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break;
+                case 'PLAGUE': amount = currentEvent === 'BLOOD_MOON' ? 15000 : 10000; teams[opponentId].score -= amount; bankScore += amount; logText += `ปล่อยโรคระบาด! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break;
+                case 'CHAOS_SWAP_LAST_DIGITS': const s1 = teams[1].score; const s2 = teams[2].score; const lastTwo1 = s1 % 100; const lastTwo2 = s2 % 100; teams[1].score = s1 - lastTwo1 + lastTwo2; teams[2].score = s2 - lastTwo2 + lastTwo1; teamId = null; logText = `เด็กฝึกงานคีย์คะแนนผิด! เลขท้ายคะแนนของทั้งสองทีมสลับกัน!`; soundType = 'negative'; break;
+                case 'CHAOS_INFLATION_HALVE_SCORES': const loss1 = teams[1].score - Math.floor(teams[1].score / 2); const loss2 = teams[2].score - Math.floor(teams[2].score / 2); teams[1].score -= loss1; teams[2].score -= loss2; bankScore += loss1 + loss2; teamId = null; logText = `ค่าเงินเฟ้อ! คะแนนของทุกทีมถูกหารสอง!`; soundType = 'negative'; break;
+                case 'ATTACK_TAX_THE_LEADER': const leaderId = teams[1].score > teams[2].score ? 1 : 2; const loserId = leaderId === 1 ? 2 : 1; if(teams[1].score !== teams[2].score) { amount = Math.floor(teams[leaderId].score * (currentEvent === 'BLOOD_MOON' ? 0.45 : 0.30)); teams[leaderId].score -= amount; bankScore += amount; logText += `สรรพากรลง! ทีมผู้นำ (${teams[leaderId].name}) โดนหัก ${amount.toLocaleString()} คะแนน!`; teamId = loserId; soundType = 'negative'; } else { logText = `สรรพากรมา แต่คะแนนเท่ากัน เลยรอดตัวไป!`; teamId = null; } break;
+                case 'CHAOS_DEJA_VU': if (lastCardAction.barcode) { addLog(null, `เดจาวู! การ์ดใบที่แล้วทำงานอีกครั้ง!`); performCardAction(lastCardAction.teamId, lastCardAction.barcode, true); return; } else { logText = `ใช้เดจาวู แต่ไม่มีการ์ดใบก่อนหน้า...`; teamId = null; soundType = 'negative';} break;
+                case 'CHAOS_PUBLIC_HOLIDAY_1MIN': teamId = null; logText = `วันหยุดนักขัตฤกษ์!`; soundType = 'negative'; break;
+                case 'SUPPORT_GAMBLE_30K': if (teams[teamId].score >= 30000) { teams[teamId].score -= 30000; bankScore += 30000; if (Math.random() < 0.5) { teams[teamId].score += 60000; bankScore -= 60000; logText = `วัดดวง... และชนะ! ได้รับ 60,000 คะแนน!`; } else { logText = `วัดดวง... และแพ้! เสีย 30,000 คะแนนไปฟรีๆ!`; soundType = 'negative'; } } else { logText = `พยายามวัดดวง แต่คะแนนไม่พอ!`; soundType = 'negative'; } break;
+                case 'ATTACK_IDENTITY_THEFT_2MIN': logText = `เปิดใช้งาน "สวมรอย"!`; break;
+                case 'CHAOS_BLACK_HOLE': logText = `เปิด "หลุมดำ"!`; break;
+                case 'ATTACK_RANSOMWARE': logText = `ปล่อยไวรัสเรียกค่าไถ่!`; soundType = 'negative'; break;
+                case 'ATTACK_UNLUCKY_GIFT': teams[teamId].score -= 10000; teams[opponentId].score += 5000; bankScore += 5000; logText = `มอบของขวัญกวนๆ! ทีมเราเสีย 10,000 แต่ทีม ${teams[opponentId].name} ได้รับ 5,000!`; soundType = 'negative'; break;
+                case 'PUNISH_JUMPING_JACKS': case 'PUNISH_PUSH_UPS': case 'PUNISH_PLANK': case 'PUNISH_SPIN': case 'PUNISH_FREESTYLE':
+                    const reps = Math.floor(Math.random() * 21) + 10;
+                    let unit = 'ครั้ง';
+                    if (barcodeResult === 'PUNISH_PLANK') unit = 'วินาที';
+                    if (barcodeResult === 'PUNISH_SPIN') unit = 'รอบ';
+                    if (barcodeResult === 'PUNISH_FREESTYLE') unit = 'วินาที';
+                    logText = `สั่งให้ทีม ${teams[opponentId].name} ${cardDatabase[barcodeResult].description.replace('ทีมตรงข้ามต้อง', '')} ${reps} ${unit}!`;
+                    soundType = 'negative';
+                    break;
+                // --- LEGENDARY CARDS ---
+                case 'LEGEND_GOLDEN_AGE': teams[teamId].score += 500000; bankScore -= 500000; logText = `เข้าสู่ยุคทอง! ได้รับ 500,000 คะแนน!`; break;
+                case 'LEGEND_ECONOMIC_COLLAPSE': amount = Math.floor(teams[opponentId].score / 2); teams[opponentId].score -= amount; bankScore += amount; logText = `เกิดวิกฤตเศรษฐกิจ! คะแนนของทีม ${teams[opponentId].name} ถูกหารสอง!`; soundType = 'negative'; break;
+                case 'LEGEND_DEBT_FORGIVENESS': if(teams[teamId].debt) { const debtAmount = teams[teamId].debt.amount; clearInterval(teams[teamId].debt.interval); teams[teamId].debt = null; teams[opponentId].debt = { principal: debtAmount, amount: debtAmount, interval: setInterval(() => { const interest = Math.floor(teams[opponentId].debt.principal * 0.20); teams[opponentId].debt.amount += interest; addLog(opponentId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teams[opponentId].debt.amount.toLocaleString()}`); updateTeamUI(opponentId); }, 600000)}; logText = `ล้างหนี้สำเร็จ! หนี้ทั้งหมดถูกโอนไปให้ทีม ${teams[opponentId].name}!`; } else { logText = `พยายามใช้การ์ดล้างหนี้ แต่ไม่มีหนี้สิน!`; soundType = 'negative'; } break;
+                case 'LEGEND_KINGMAKER': if (teams[teamId].score < teams[opponentId].score) { amount = (teams[opponentId].score + 1) - teams[teamId].score; teams[teamId].score += amount; bankScore -= amount; logText = `ขึ้นเป็นราชา! คะแนนถูกปรับให้แซง ${teams[opponentId].name}!`; } else { logText = `ใช้การ์ดผู้สร้างราชา แต่คะแนนนำอยู่แล้ว!`; soundType = 'negative'; } break;
+                case 'LEGEND_REVOLUTION': const leader = teams[1].score > teams[2].score ? 1 : 2; const trailer = leader === 1 ? 2 : 1; if(teams[1].score !== teams[2].score && teamId === trailer) { amount = Math.floor(teams[leader].score * 0.5); teams[trailer].score += amount; teams[leader].score -= amount; logText = `ปฏิวัติ! ทีม ${teams[trailer].name} ขโมย 50% ของคะแนนจากทีม ${teams[leader].name}!`; } else { logText = `พยายามปฏิวัติแต่ไม่สำเร็จ!`; soundType = 'negative'; } break;
+                case 'LEGEND_ZERO_SUM': bankScore += teams[opponentId].score; teams[opponentId].score = 0; logText = `เกมศูนย์! คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตเป็น 0!`; soundType = 'negative'; break;
+                case 'LEGEND_DIVINE_INTERVENTION': teams[teamId].score += 1000000; bankScore -= 1000000; logText = `สวรรค์เมตตา! ได้รับ 1,000,000 คะแนน!`; break;
+                case 'LEGEND_PANDORAS_BOX': teamId = null; logText = `เปิดกล่องแพนโดร่า! ความโกลาหลบังเกิด!`; soundType = 'negative'; setTimeout(() => { const cards = Object.keys(cardDatabase).filter(k => k.startsWith('LEGEND_')); let card1 = cards[Math.floor(Math.random() * cards.length)]; let card2 = cards[Math.floor(Math.random() * cards.length)]; showCardInfo(card1); showCardInfo(card2); }, 1000); break;
+                case 'LEGEND_MIRROR_MATCH': amount = teams[teamId].score - teams[opponentId].score; bankScore -= amount; teams[opponentId].score = teams[teamId].score; logText = `ภาพสะท้อน! คะแนนของทีม ${teams[opponentId].name} ถูกปรับให้เท่ากับทีมเรา!`; soundType = 'negative'; break;
+                case 'LEGEND_DOOMSDAY': const lossTeam1 = Math.floor(teams[1].score * 0.5); const lossTeam2 = Math.floor(teams[2].score * 0.5); teams[1].score -= lossTeam1; teams[2].score -= lossTeam2; bankScore += lossTeam1 + lossTeam2; if(opponentId === 1) { teams[1].score -= 100000; bankScore += 100000; } else { teams[2].score -= 100000; bankScore += 100000; } logText = `วันสิ้นโลก! ทุกทีมเสีย 50% ของคะแนน และทีม ${teams[opponentId].name} เสียเพิ่มอีก 100,000!`; soundType = 'negative'; break;
+                default: logText = `สแกน QR Code "${barcodeResult}" แต่ไม่มี Action ที่ตรงกัน`; soundType = 'negative'; break;
+            }
+            
+            playSound(soundType);
+            addLog(teamId, logText);
+            if (!isDejaVu) {
+                lastCardAction = { teamId, barcode: barcodeResult };
+            }
+            updateBankUI();
+            updateTeamUI(1);
+            updateTeamUI(2);
+        }
+
+        function showCardInfo(barcode) {
+            const card = cardDatabase[barcode];
+            if (card) {
+                let description = card.description;
+                if(barcode.startsWith('PUNISH_')) {
+                    const reps = Math.floor(Math.random() * 21) + 10;
+                    let unit = 'ครั้ง';
+                    if (barcode === 'PUNISH_PLANK' || barcode === 'PUNISH_FREESTYLE') unit = 'วินาที';
+                    if (barcode === 'PUNISH_SPIN') unit = 'รอบ';
+                    description = `${card.description} ${reps} ${unit}!`;
+                }
+                showCustomAlert(card.name, description, card.emoji);
+                setTimeout(() => {
+                    closeCustomAlert();
+                    performCardAction(activeTeam, barcode);
+                }, 4000);
+            } else {
+                performCardAction(activeTeam, barcode); // Fallback for unknown cards
+            }
+        }
+
+        const onScanSuccess = (decodedText, decodedResult) => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    closeScannerModal();
+                    playSound('scan');
+                    showCardInfo(decodedText);
+                }).catch(err => console.error("Failed to stop scanner", err));
+            }
+        };
+
+        const onScanFailure = (error) => { /* Ignore */ };
+
+        function openScanner(teamId) {
+            initAudio();
+            activeTeam = teamId;
+            
+            elements.scannerModalTitle.innerText = `SCAN FOR ${teams[teamId].name}`;
+            elements.scannerModalTitle.style.color = teams[teamId].color;
+            elements.scannerModalContent.style.borderColor = teams[teamId].color;
+            elements.scannerModal.classList.remove('opacity-0', 'pointer-events-none');
+            elements.scannerModalContent.classList.remove('scale-95');
+
+            html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+                .catch(err => {
+                    console.error("Unable to start scanning.", err);
+                    elements.reader.innerHTML = "ไม่สามารถเปิดกล้องได้";
+                });
+        }
+
+        function closeScannerModal() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.error("Error stopping the scanner on close.", err));
+            }
+            elements.scannerModal.classList.add('opacity-0', 'pointer-events-none');
+            elements.scannerModalContent.classList.add('scale-95');
+        }
+        
+        function showCustomAlert(title, message, icon) {
+            elements.alertTitle.textContent = title;
+            elements.alertMessage.textContent = message;
+            elements.alertIcon.innerHTML = `<div class="text-5xl">${icon}</div>`;
+            elements.alertButtons.innerHTML = `<button id="close-alert-button" class="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition">OK</button>`;
+            document.getElementById('close-alert-button').onclick = closeCustomAlert;
+            elements.alertModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function showCustomConfirm(title, message, icon, onConfirm) {
+             elements.alertTitle.textContent = title;
+            elements.alertMessage.textContent = message;
+            elements.alertIcon.innerHTML = `<div class="text-5xl">${icon}</div>`;
+            elements.alertButtons.innerHTML = `
+                <button id="confirm-yes" class="bg-green-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-green-700 transition">Yes</button>
+                <button id="confirm-no" class="bg-red-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-red-700 transition">No</button>
+            `;
+            document.getElementById('confirm-yes').onclick = () => {
+                onConfirm();
+                closeCustomAlert();
+            };
+            document.getElementById('confirm-no').onclick = closeCustomAlert;
+            elements.alertModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        
+        function closeCustomAlert() {
+            elements.alertModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function handleManualScore(event, teamId) {
+            if (event.key === 'Enter') {
+                initAudio();
+                const inputElement = event.target;
+                const value = parseInt(inputElement.value, 10);
+                if (!isNaN(value)) {
+                    teams[teamId].score += value;
+                    bankScore -= value;
+                    updateBankUI();
+                    const actionText = value >= 0 ? `เพิ่ม` : `ลด`;
+                    addLog(teamId, `คะแนนถูก${actionText}โดยแอดมิน ${Math.abs(value).toLocaleString()} คะแนน!`);
+                    playSound(value >= 0 ? 'positive' : 'negative');
+                    updateTeamUI(teamId);
+                    inputElement.value = '';
+                }
+            }
+        }
+        
+        function getGamblePrize() {
+            const rand = Math.random();
+            if (rand < 0.4) { // 40%
+                return Math.floor(Math.random() * 9001); // 0 - 9000
+            } else if (rand < 0.7) { // 30%
+                return Math.floor(Math.random() * (300000 - 9001 + 1)) + 9001; // 9001 - 300000
+            } else if (rand < 0.9) { // 20%
+                return Math.floor(Math.random() * (700000 - 300001 + 1)) + 300001; // 300001 - 700000
+            } else { // 10%
+                return Math.floor(Math.random() * (1000000 - 700001 + 1)) + 700001; // 700001 - 1000000
+            }
+        }
+
+        function handleGamble(teamId) {
+            initAudio();
+            const betAmount = 10000;
+            const teamData = teams[teamId];
+
+            if (teamData.score < betAmount) {
+                addLog(teamId, `พยายามจะเดิมพัน แต่คะแนนไม่พอ! (ต้องการ ${betAmount.toLocaleString()})`);
+                playSound('negative');
+                return;
+            }
+
+            teamData.score -= betAmount;
+            bankScore += betAmount;
+            updateBankUI();
+            updateTeamUI(teamId);
+            
+            elements.gambleModal.classList.remove('opacity-0', 'pointer-events-none');
+            elements.gambleResult.classList.add('hidden');
+            
+            playSound('gamble_reel', 5);
+            const reelInterval = setInterval(() => {
+                const randomDisplay = Math.floor(Math.random() * 1000000);
+                elements.gambleReel.textContent = randomDisplay.toString().padStart(7, '0');
+            }, 50);
+
+            setTimeout(() => {
+                clearInterval(reelInterval);
+                const prize = getGamblePrize();
+                teamData.score += prize;
+                bankScore -= prize;
+                
+                elements.gambleReel.textContent = prize.toLocaleString();
+                
+                let resultMessage = '';
+                if (prize > 700000) {
+                    resultMessage = `แจ็คพอตแตก! คุณได้รับรางวัลใหญ่ ${prize.toLocaleString()} คะแนน!`;
+                    playSound('positive');
+                } else if (prize > 0) {
+                    resultMessage = `คุณได้รับรางวัล ${prize.toLocaleString()} คะแนน!`;
+                    playSound('positive');
+                } else {
+                    resultMessage = `เสียใจด้วย... คุณไม่ได้อะไรเลย!`;
+                    playSound('negative');
+                }
+                
+                elements.gambleResult.querySelector('p').textContent = resultMessage;
+                elements.gambleResult.classList.remove('hidden');
+
+                addLog(teamId, `จ่าย 10,000 เพื่อวัดดวง... และได้รับ ${prize.toLocaleString()} คะแนน!`);
+                updateBankUI();
+                updateTeamUI(teamId);
+
+            }, 5000);
+        }
+
+        function closeGambleModal() {
+            elements.gambleModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+        
+        // --- SUMMARY LOGIC ---
+        function handleSummary() {
+            initAudio();
+            playSound('end');
+
+            const team1 = teams[1];
+            const team2 = teams[2];
+            let winner, loser;
+
+            if (team1.score > team2.score) {
+                winner = team1;
+                loser = team2;
+            } else if (team2.score > team1.score) {
+                winner = team2;
+                loser = team1;
+            }
+            
+            elements.summaryWinner.innerHTML = '';
+            elements.summaryLoser.innerHTML = '';
+            const punishmentReel = document.createElement('div');
+            punishmentReel.className = 'font-pixel text-2xl text-yellow-400';
+            elements.summaryPunishment.innerHTML = '';
+            elements.summaryPunishment.appendChild(punishmentReel);
+
+            elements.closeSummaryButton.classList.add('hidden');
+            elements.summaryModal.classList.remove('opacity-0', 'pointer-events-none');
+
+            const punishments = [
+                "กระโดดตบ 30 ครั้ง",
+                "ดันพื้น 20 ครั้ง",
+                "แพลงค์ 2 นาที",
+                "ปั่นจิ้งหรีด 10 รอบ แล้วเดินตรง",
+                "ออกกำลังกายอะไรก็ได้ 30 วินาที"
+            ];
+
+            if (loser) {
+                playSound('gamble_reel', 5);
+                const reelInterval = setInterval(() => {
+                    const randomPunishment = punishments[Math.floor(Math.random() * punishments.length)];
+                    punishmentReel.textContent = randomPunishment;
+                }, 100);
+
+                setTimeout(() => {
+                    clearInterval(reelInterval);
+                    const finalPunishment = punishments[Math.floor(Math.random() * punishments.length)];
+                    elements.summaryWinner.innerHTML = `<h4 class="text-lg font-bold">ผู้ชนะ <i class="fa-solid fa-crown text-yellow-400"></i></h4><p class="font-pixel text-2xl" style="color: ${winner.color};">${winner.name}</p><p class="text-xl font-bold">${winner.score.toLocaleString()} PTS</p>`;
+                    elements.summaryLoser.innerHTML = `<h4 class="text-lg font-bold">ผู้แพ้</h4><p class="font-pixel text-2xl" style="color: ${loser.color};">${loser.name}</p><p class="text-xl font-bold">${loser.score.toLocaleString()} PTS</p>`;
+                    elements.summaryPunishment.innerHTML = `<h4 class="text-lg font-bold text-red-500">บทลงโทษสำหรับผู้แพ้</h4><p class="text-2xl font-bold text-white">${finalPunishment}</p>`;
+                    elements.closeSummaryButton.classList.remove('hidden');
+                }, 5000);
+            } else { // Draw
+                elements.summaryWinner.innerHTML = `<h4 class="font-pixel text-2xl text-yellow-400">เสมอ!</h4>`;
+                elements.summaryLoser.innerHTML = `<p class="text-xl font-bold">${team1.score.toLocaleString()} PTS</p>`;
+                elements.summaryPunishment.innerHTML = `<h4 class="text-lg font-bold">ไม่มีผู้แพ้!</h4><p class="text-2xl font-bold text-white">รอดตัวไปนะ!</p>`;
+                elements.closeSummaryButton.classList.remove('hidden');
+            }
+        }
+
+        function closeSummaryModal() {
+            elements.summaryModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // --- SPECIAL EVENTS ---
+        function triggerRandomEvent() {
+            if (currentEvent) return; // Don't trigger if one is already active
+
+            const possibleEvents = ['BLOOD_MOON', 'MARKET_CRASH', null, null, null]; // Higher chance of no event
+            const event = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
+
+            if (event === 'BLOOD_MOON') {
+                currentEvent = 'BLOOD_MOON';
+                elements.eventBannerContainer.innerHTML = `
+                    <div class="panel p-4 text-center border-red-500 event-banner">
+                        <h3 class="font-pixel text-red-500 text-lg mb-2">BLOOD MOON!</h3>
+                        <p class="text-white">การ์ดโจมตีทั้งหมดรุนแรงขึ้น 50% เป็นเวลา 1 นาที!</p>
+                    </div>`;
+                playSound('negative');
+                setTimeout(() => {
+                    currentEvent = null;
+                    elements.eventBannerContainer.innerHTML = '';
+                }, 60000); // 1 minute duration
+            } else if (event === 'MARKET_CRASH') {
+                elements.eventBannerContainer.innerHTML = `
+                    <div class="panel p-4 text-center border-yellow-500 event-banner">
+                        <h3 class="font-pixel text-yellow-500 text-lg mb-2">MARKET CRASH!</h3>
+                        <p class="text-white">ตลาดหุ้นล่ม! คะแนนทุกทีมลดลง 15%!</p>
+                    </div>`;
+                playSound('negative');
+                const loss1 = Math.floor(teams[1].score * 0.15);
+                const loss2 = Math.floor(teams[2].score * 0.15);
+                teams[1].score -= loss1;
+                teams[2].score -= loss2;
+                bankScore += loss1 + loss2;
+                updateBankUI();
+                addLog(null, `ตลาดหุ้นล่ม! คะแนนทุกทีมลดลง 15%!`);
+                updateTeamUI(1);
+                updateTeamUI(2);
+                setTimeout(() => {
+                    elements.eventBannerContainer.innerHTML = '';
+                }, 10000); // Display for 10 seconds
+            }
+        }
+        
+        // --- TROLL BUTTONS & RESET ---
+        function handleResetGame() {
+            showCustomConfirm('รีเซ็ตเกม?', 'คุณแน่ใจหรือไม่ว่าจะรีเซ็ตคะแนนและเริ่มต้นใหม่ทั้งหมด?', '🤔', () => {
+                teams[1].score = 100000;
+                teams[2].score = 100000;
+                bankScore = 1000000000000;
+                feedEvents.length = 0;
+                updateTeamUI(1);
+                updateTeamUI(2);
+                updateBankUI();
+                renderBattleLog();
+                addLog(null, 'เกมถูกรีเซ็ต!');
+                playSound('end');
+            });
+        }
+        
+        function handleRobinHood() {
+            const leaderId = teams[1].score > teams[2].score ? 1 : 2;
+            const trailerId = leaderId === 1 ? 2 : 1;
+            
+            if (teams[1].score === teams[2].score) {
+                addLog(null, 'โรบินฮู้ดปรากฏตัว แต่คะแนนเท่ากันเลยไม่รู้จะปล้นใคร!');
+                playSound('negative');
+                return;
+            }
+
+            const amount = Math.floor(teams[leaderId].score * 0.25);
+            teams[leaderId].score -= amount;
+            teams[trailerId].score += amount;
+            
+            addLog(null, `โรบินฮู้ดปล้น ${amount.toLocaleString()} คะแนนจากทีม ${teams[leaderId].name} ไปให้ทีม ${teams[trailerId].name}!`);
+            playSound('positive');
+            updateTeamUI(1);
+            updateTeamUI(2);
+        }
+
+        function handleBlindBet() {
+            addLog(null, 'เดิมพันตาบอด! ทั้งสองทีมต้องวัดดวง!');
+            playSound('negative');
+            setTimeout(() => handleGamble(1), 500);
+            setTimeout(() => handleGamble(2), 6000); // Delay second gamble
+        }
+
+        function handleRandomEventButton() {
+            const luckyTeamId = Math.random() < 0.5 ? 1 : 2;
+            const unluckyTeamId = luckyTeamId === 1 ? 2 : 1;
+            teams[luckyTeamId].score += 50000;
+            teams[unluckyTeamId].score -= 25000;
+            bankScore -= (50000 - 25000);
+            updateBankUI();
+            addLog(null, `โชคชะตาเข้าข้างทีม ${teams[luckyTeamId].name}! ได้รับ 50,000 และทีม ${teams[unluckyTeamId].name} เสีย 25,000!`);
+            playSound('positive');
+            updateTeamUI(1);
+            updateTeamUI(2);
+        }
+        
+        // --- LOAN LOGIC ---
+        function handleLoan(teamId) {
+            const teamData = teams[teamId];
+            if (teamData.debt) {
+                // Repay debt
+                if (teamData.score >= teamData.debt.amount) {
+                    teamData.score -= teamData.debt.amount;
+                    bankScore += teamData.debt.amount;
+                    addLog(teamId, `ชำระหนี้ ${teamData.debt.amount.toLocaleString()} คะแนนเรียบร้อย!`);
+                    clearInterval(teamData.debt.interval);
+                    teamData.debt = null;
+                    playSound('positive');
+                } else {
+                    addLog(teamId, `คะแนนไม่พอชำระหนี้!`);
+                    playSound('negative');
+                }
+            } else {
+                // Take a loan
+                const loanAmountInput = document.getElementById(`team${teamId}-loan-amount`);
+                const amount = parseInt(loanAmountInput.value, 10);
+                if (!isNaN(amount) && amount > 0 && bankScore >= amount) {
+                    teamData.score += amount;
+                    bankScore -= amount;
+                    teamData.debt = {
+                        principal: amount,
+                        amount: amount,
+                        interval: setInterval(() => {
+                            const interest = Math.floor(teamData.debt.principal * 0.20);
+                            teamData.debt.amount += interest;
+                            addLog(teamId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teamData.debt.amount.toLocaleString()}`);
+                            updateTeamUI(teamId);
+                        }, 600000) // 10 minutes
+                    };
+                    addLog(teamId, `กู้ยืม ${amount.toLocaleString()} คะแนนสำเร็จ!`);
+                    playSound('positive');
+                    loanAmountInput.value = '';
+                } else {
+                    addLog(teamId, `ไม่สามารถกู้ยืมได้! (ยอดไม่ถูกต้องหรือธนาคารไม่มีเงินพอ)`);
+                    playSound('negative');
+                }
+            }
+            updateBankUI();
+            updateTeamUI(teamId);
+        }
+        
+        // --- BUY CARDS LOGIC ---
+        function handleBuyCards(teamId) {
+            const teamData = teams[teamId];
+            const teamElements = elements[`team${teamId}`];
+            const quantity = parseInt(teamElements.buyAmountInput.value, 10);
+            
+            if (isNaN(quantity) || quantity <= 0) {
+                addLog(teamId, `กรุณาใส่จำนวนการ์ดที่ต้องการซื้อ!`);
+                playSound('negative');
+                return;
+            }
+            
+            const totalCost = quantity * 50000;
+            
+            if (teamData.score >= totalCost) {
+                teamData.score -= totalCost;
+                bankScore += totalCost;
+                updateBankUI();
+                addLog(teamId, `ซื้อการ์ด ${quantity} ใบสำเร็จ! เสียไป ${totalCost.toLocaleString()} คะแนน`);
+                playSound('positive');
+                teamElements.buyAmountInput.value = '';
+                updateTeamUI(teamId);
+            } else {
+                addLog(teamId, `คะแนนไม่พอซื้อการ์ด! (ต้องการ ${totalCost.toLocaleString()})`);
+                playSound('negative');
+            }
+        }
+        
+        // --- BLACK MARKET ---
+        function handleBlackMarket(teamId) {
+            const cost = 250000;
+            const teamData = teams[teamId];
+
+            if (teamData.score < cost) {
+                addLog(teamId, `คะแนนไม่พอเข้าตลาดมืด! (ต้องการ ${cost.toLocaleString()})`);
+                playSound('negative');
+                return;
+            }
+
+            teamData.score -= cost;
+            bankScore += cost;
+            updateBankUI();
+            updateTeamUI(teamId);
+            
+            addLog(teamId, `จ่าย ${cost.toLocaleString()} เข้าตลาดมืด...`);
+            playSound('gamble_reel', 2);
+
+            setTimeout(() => {
+                const legendaryCards = Object.keys(cardDatabase).filter(k => k.startsWith('LEGEND_'));
+                const randomCard = legendaryCards[Math.floor(Math.random() * legendaryCards.length)];
+                activeTeam = teamId;
+                showCardInfo(randomCard);
+            }, 2000);
+        }
+
+
+        elements.team1.name.addEventListener('input', (e) => { teams[1].name = e.target.value; });
+        elements.team2.name.addEventListener('input', (e) => { teams[2].name = e.target.value; });
+        elements.team1.color.addEventListener('input', (e) => { teams[1].color = e.target.value; updateTeamUI(1); });
+        elements.team2.color.addEventListener('input', (e) => { teams[2].color = e.target.value; updateTeamUI(2); });
+        elements.team1.manualScore.addEventListener('keydown', (e) => handleManualScore(e, 1));
+        elements.team2.manualScore.addEventListener('keydown', (e) => handleManualScore(e, 2));
+        elements.closeScannerButton.addEventListener('click', closeScannerModal);
+        elements.scannerModal.addEventListener('click', (e) => { if (e.target === elements.scannerModal) closeScannerModal(); });
+        elements.closeAlertButton.addEventListener('click', closeCustomAlert);
+        elements.closeGambleButton.addEventListener('click', closeGambleModal);
+        elements.summaryButton.addEventListener('click', handleSummary);
+        elements.closeSummaryButton.addEventListener('click', closeSummaryModal);
+        elements.resetGameButton.addEventListener('click', handleResetGame);
+        elements.trollRobinhoodButton.addEventListener('click', handleRobinHood);
+        elements.trollBlindBetButton.addEventListener('click', handleBlindBet);
+        elements.trollRandomButton.addEventListener('click', handleRandomEventButton);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const title = "TEAM BATTLE";
+            const titleContainer = elements.mainTitle;
+            title.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                span.className = 'title-char';
+                span.style.animationDelay = `${i * 0.1}s`;
+                titleContainer.appendChild(span);
+            });
+
+            updateTeamUI(1);
+            updateTeamUI(2);
+            updateBankUI();
+            renderBattleLog();
+            
+            // Start random event trigger loop (every 60-120 seconds)
+            setInterval(triggerRandomEvent, Math.floor(Math.random() * 60000) + 60000);
+        });
+    </script>
+</body>
+</html>
+
