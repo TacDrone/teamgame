@@ -466,8 +466,6 @@
             teamElements.score.innerText = teamData.score.toLocaleString();
             teamElements.panel.style.borderColor = teamData.color;
             teamElements.panel.style.boxShadow = `0 0 20px ${teamData.color}40`;
-            teamElements.button.style.backgroundColor = teamData.color;
-            teamElements.button.style.boxShadow = `0 0 15px ${teamData.color}`;
             
             teamElements.score.style.setProperty('--team-color', teamData.color);
             if (!teamElements.score.classList.contains('score-blinking')) {
@@ -498,7 +496,10 @@
         function addLog(teamId, text) { feedEvents.unshift({ teamId, text }); if (feedEvents.length > 20) feedEvents.pop(); renderBattleLog(); }
         
         function performCardAction(teamId, barcodeResult, isDejaVu = false) {
-            let opponentId = teamId === 1 ? 2 : 1;
+            // For Pandora's Box, teamId can be null initially.
+            if (teamId !== null) {
+                let opponentId = teamId === 1 ? 2 : 1;
+            }
             let logText = '';
             let soundType = 'positive';
             let amount = 0;
@@ -507,6 +508,9 @@
             if (currentEvent === 'BLOOD_MOON' && isAttackCard) {
                 logText += '[BLOOD MOON!] ';
             }
+
+            // Define opponentId here, it's needed in many cases
+            let opponentId = teamId === 1 ? 2 : 1;
 
             switch (barcodeResult) {
                 case '0001': teams[teamId].score += 12000; bankScore -= 12000; logText = `ได้รับ 12,000 คะแนน`; break;
@@ -536,18 +540,28 @@
                 case '0025': [teams[teamId].score, teams[opponentId].score] = [teams[opponentId].score, teams[teamId].score]; logText = `พลิกชะตา! สลับคะแนนกับทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
                 case '0026': if (teams[opponentId].score > 25000) { bankScore += teams[opponentId].score - 25000; teams[opponentId].score = 25000; logText = `คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตกลับไปที่ 25,000!`; soundType = 'negative';} else { logText = `พยายามรีเซ็ตคะแนน แต่ไม่สำเร็จ`; } break;
                 case '0027': if (teams[opponentId].score > teams[teamId].score) { amount = Math.floor((teams[opponentId].score - teams[teamId].score) * (currentEvent === 'BLOOD_MOON' ? 0.225 : 0.15)); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `เก็บภาษีคนรวย! ได้รับ ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; } else { logText = `พยายามเก็บภาษี แต่คะแนนน้อยกว่า`; soundType = 'negative'; } break;
-                case '0028': logText = `ทีม ${teams[opponentId].name} โดนคำสาปกระเป๋ารั่ว!`; soundType = 'negative'; break;
+                case '0028': logText = `ทีม ${teams[opponentId].name} โดนคำสาปกระเป๋ารั่ว!`; soundType = 'negative'; break; // Note: Actual effect not implemented
                 case '0029': amount = currentEvent === 'BLOOD_MOON' ? 52500 : 35000; teams[opponentId].score -= amount; bankScore += amount; logText += `ทิ้งระเบิดคะแนน! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break;
-                case '0030': amount = currentEvent === 'BLOOD_MOON' ? 15000 : 10000; teams[opponentId].score -= amount; bankScore += amount; logText += `ปล่อยโรคระบาด! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break;
+                case '0030': amount = currentEvent === 'BLOOD_MOON' ? 15000 : 10000; teams[opponentId].score -= amount; bankScore += amount; logText += `ปล่อยโรคระบาด! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break; // Note: Continuous effect not implemented
                 case '0031': const s1 = teams[1].score; const s2 = teams[2].score; const lastTwo1 = s1 % 100; const lastTwo2 = s2 % 100; teams[1].score = s1 - lastTwo1 + lastTwo2; teams[2].score = s2 - lastTwo2 + lastTwo1; teamId = null; logText = `เด็กฝึกงานคีย์คะแนนผิด! เลขท้ายคะแนนของทั้งสองทีมสลับกัน!`; soundType = 'negative'; break;
-                case '0032': const loss1 = teams[1].score - Math.floor(teams[1].score / 2); const loss2 = teams[2].score - Math.floor(teams[2].score / 2); teams[1].score -= loss1; teams[2].score -= loss2; bankScore += loss1 + loss2; teamId = null; logText = `ค่าเงินเฟ้อ! คะแนนของทุกทีมถูกหารสอง!`; soundType = 'negative'; break;
+                case '0032':
+                    const originalScore1 = teams[1].score;
+                    const originalScore2 = teams[2].score;
+                    teams[1].score = Math.floor(originalScore1 / 2);
+                    teams[2].score = Math.floor(originalScore2 / 2);
+                    const totalLoss = (originalScore1 - teams[1].score) + (originalScore2 - teams[2].score);
+                    bankScore += totalLoss;
+                    teamId = null;
+                    logText = `ค่าเงินเฟ้อ! คะแนนของทุกทีมถูกหารสอง!`;
+                    soundType = 'negative';
+                    break;
                 case '0033': const leaderId = teams[1].score > teams[2].score ? 1 : 2; const loserId = leaderId === 1 ? 2 : 1; if(teams[1].score !== teams[2].score) { amount = Math.floor(teams[leaderId].score * (currentEvent === 'BLOOD_MOON' ? 0.45 : 0.30)); teams[leaderId].score -= amount; bankScore += amount; logText += `สรรพากรลง! ทีมผู้นำ (${teams[leaderId].name}) โดนหัก ${amount.toLocaleString()} คะแนน!`; teamId = loserId; soundType = 'negative'; } else { logText = `สรรพากรมา แต่คะแนนเท่ากัน เลยรอดตัวไป!`; teamId = null; } break;
                 case '0034': if (lastCardAction.barcode) { addLog(null, `เดจาวู! การ์ดใบที่แล้วทำงานอีกครั้ง!`); performCardAction(lastCardAction.teamId, lastCardAction.barcode, true); return; } else { logText = `ใช้เดจาวู แต่ไม่มีการ์ดใบก่อนหน้า...`; teamId = null; soundType = 'negative';} break;
-                case '0035': teamId = null; logText = `วันหยุดนักขัตฤกษ์!`; soundType = 'negative'; break;
+                case '0035': teamId = null; logText = `วันหยุดนักขัตฤกษ์!`; soundType = 'negative'; break; // Note: Actual effect not implemented
                 case '0036': if (teams[teamId].score >= 30000) { teams[teamId].score -= 30000; bankScore += 30000; if (Math.random() < 0.5) { teams[teamId].score += 60000; bankScore -= 60000; logText = `วัดดวง... และชนะ! ได้รับ 60,000 คะแนน!`; } else { logText = `วัดดวง... และแพ้! เสีย 30,000 คะแนนไปฟรีๆ!`; soundType = 'negative'; } } else { logText = `พยายามวัดดวง แต่คะแนนไม่พอ!`; soundType = 'negative'; } break;
-                case '0037': logText = `เปิดใช้งาน "สวมรอย"!`; break;
-                case '0038': logText = `เปิด "หลุมดำ"!`; break;
-                case '0039': logText = `ปล่อยไวรัสเรียกค่าไถ่!`; soundType = 'negative'; break;
+                case '0037': logText = `เปิดใช้งาน "สวมรอย"!`; break; // Note: Actual effect not implemented
+                case '0038': logText = `เปิด "หลุมดำ"!`; break; // Note: Actual effect not implemented
+                case '0039': logText = `ปล่อยไวรัสเรียกค่าไถ่!`; soundType = 'negative'; break; // Note: Actual effect not implemented
                 case '0040': teams[teamId].score -= 10000; teams[opponentId].score += 5000; bankScore += 5000; logText = `มอบของขวัญกวนๆ! ทีมเราเสีย 10,000 แต่ทีม ${teams[opponentId].name} ได้รับ 5,000!`; soundType = 'negative'; break;
                 case '0041': case '0042': case '0043': case '0044': case '0045':
                     const reps = Math.floor(Math.random() * 21) + 10;
@@ -560,15 +574,60 @@
                     break;
                 // --- LEGENDARY CARDS ---
                 case '0046': teams[teamId].score += 500000; bankScore -= 500000; logText = `เข้าสู่ยุคทอง! ได้รับ 500,000 คะแนน!`; break;
-                case '0047': amount = Math.floor(teams[opponentId].score / 2); teams[opponentId].score -= amount; bankScore += amount; logText = `เกิดวิกฤตเศรษฐกิจ! คะแนนของทีม ${teams[opponentId].name} ถูกหารสอง!`; soundType = 'negative'; break;
+                case '0047':
+                    const originalOpponentScore = teams[opponentId].score;
+                    teams[opponentId].score = Math.floor(originalOpponentScore / 2);
+                    const loss = originalOpponentScore - teams[opponentId].score;
+                    bankScore += loss;
+                    logText = `เกิดวิกฤตเศรษฐกิจ! คะแนนของทีม ${teams[opponentId].name} ถูกหารสอง!`;
+                    soundType = 'negative';
+                    break;
                 case '0048': if(teams[teamId].debt) { const debtAmount = teams[teamId].debt.amount; clearInterval(teams[teamId].debt.interval); teams[teamId].debt = null; teams[opponentId].debt = { principal: debtAmount, amount: debtAmount, interval: setInterval(() => { const interest = Math.floor(teams[opponentId].debt.principal * 0.20); teams[opponentId].debt.amount += interest; addLog(opponentId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teams[opponentId].debt.amount.toLocaleString()}`); updateTeamUI(opponentId); }, 600000)}; logText = `ล้างหนี้สำเร็จ! หนี้ทั้งหมดถูกโอนไปให้ทีม ${teams[opponentId].name}!`; } else { logText = `พยายามใช้การ์ดล้างหนี้ แต่ไม่มีหนี้สิน!`; soundType = 'negative'; } break;
                 case '0049': if (teams[teamId].score < teams[opponentId].score) { amount = (teams[opponentId].score + 1) - teams[teamId].score; teams[teamId].score += amount; bankScore -= amount; logText = `ขึ้นเป็นราชา! คะแนนถูกปรับให้แซง ${teams[opponentId].name}!`; } else { logText = `ใช้การ์ดผู้สร้างราชา แต่คะแนนนำอยู่แล้ว!`; soundType = 'negative'; } break;
                 case '0050': const leader = teams[1].score > teams[2].score ? 1 : 2; const trailer = leader === 1 ? 2 : 1; if(teams[1].score !== teams[2].score && teamId === trailer) { amount = Math.floor(teams[leader].score * 0.5); teams[trailer].score += amount; teams[leader].score -= amount; logText = `ปฏิวัติ! ทีม ${teams[trailer].name} ขโมย 50% ของคะแนนจากทีม ${teams[leader].name}!`; } else { logText = `พยายามปฏิวัติแต่ไม่สำเร็จ!`; soundType = 'negative'; } break;
                 case '0051': bankScore += teams[opponentId].score; teams[opponentId].score = 0; logText = `เกมศูนย์! คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตเป็น 0!`; soundType = 'negative'; break;
                 case '0052': teams[teamId].score += 1000000; bankScore -= 1000000; logText = `สวรรค์เมตตา! ได้รับ 1,000,000 คะแนน!`; break;
-                case '0053': teamId = null; logText = `เปิดกล่องแพนโดร่า! ความโกลาหลบังเกิด!`; soundType = 'negative'; setTimeout(() => { const cards = Object.keys(cardDatabase).filter(k => k > '0045'); let card1 = cards[Math.floor(Math.random() * cards.length)]; let card2 = cards[Math.floor(Math.random() * cards.length)]; showCardInfo(card1); showCardInfo(card2); }, 1000); break;
+                case '0053':
+                    teamId = null; // System event
+                    logText = `เปิดกล่องแพนโดร่า! ความโกลาหลบังเกิด!`;
+                    soundType = 'negative';
+                    // This card's actions are handled outside the main flow to affect both teams
+                    // We add the initial log here, then trigger the separate actions.
+                    setTimeout(() => {
+                        const legendaryCards = Object.keys(cardDatabase).filter(k => k >= '0046' && k <= '0055');
+                        let card1 = legendaryCards[Math.floor(Math.random() * legendaryCards.length)];
+                        let card2 = legendaryCards[Math.floor(Math.random() * legendaryCards.length)];
+                        
+                        addLog(null, `ทีม ${teams[1].name} ได้รับผลจาก: ${cardDatabase[card1].name}!`);
+                        performCardAction(1, card1);
+                        
+                        setTimeout(() => {
+                            addLog(null, `ทีม ${teams[2].name} ได้รับผลจาก: ${cardDatabase[card2].name}!`);
+                            performCardAction(2, card2);
+                        }, 2000); // Stagger the effects for readability in the log
+                    }, 1000);
+                    // We must break here to avoid the default log/UI update at the end of the function
+                    // because the actions are delayed.
+                    playSound(soundType);
+                    addLog(teamId, logText);
+                    if (!isDejaVu) {
+                       lastCardAction = { teamId, barcode: barcodeResult };
+                    }
+                    return; // Exit function early
                 case '0054': amount = teams[teamId].score - teams[opponentId].score; bankScore -= amount; teams[opponentId].score = teams[teamId].score; logText = `ภาพสะท้อน! คะแนนของทีม ${teams[opponentId].name} ถูกปรับให้เท่ากับทีมเรา!`; soundType = 'negative'; break;
-                case '0055': const lossTeam1 = Math.floor(teams[1].score * 0.5); const lossTeam2 = Math.floor(teams[2].score * 0.5); teams[1].score -= lossTeam1; teams[2].score -= lossTeam2; bankScore += lossTeam1 + lossTeam2; if(opponentId === 1) { teams[1].score -= 100000; bankScore += 100000; } else { teams[2].score -= 100000; bankScore += 100000; } logText = `วันสิ้นโลก! ทุกทีมเสีย 50% ของคะแนน และทีม ${teams[opponentId].name} เสียเพิ่มอีก 100,000!`; soundType = 'negative'; break;
+                case '0055':
+                    const lossTeam1 = Math.floor(teams[1].score * 0.5);
+                    const lossTeam2 = Math.floor(teams[2].score * 0.5);
+                    teams[1].score -= lossTeam1;
+                    teams[2].score -= lossTeam2;
+                    bankScore += lossTeam1 + lossTeam2;
+                    
+                    teams[opponentId].score -= 100000;
+                    bankScore += 100000;
+
+                    logText = `วันสิ้นโลก! ทุกทีมเสีย 50% ของคะแนน และทีม ${teams[opponentId].name} เสียเพิ่มอีก 100,000!`;
+                    soundType = 'negative';
+                    break;
                 default: logText = `สแกน QR Code "${barcodeResult}" แต่ไม่มี Action ที่ตรงกัน`; soundType = 'negative'; break;
             }
             
@@ -577,9 +636,16 @@
             if (!isDejaVu) {
                 lastCardAction = { teamId, barcode: barcodeResult };
             }
+
+            // Update UI for all teams if it was a global event
+            if (teamId === null) {
+                updateTeamUI(1);
+                updateTeamUI(2);
+            } else {
+                updateTeamUI(teamId);
+                updateTeamUI(opponentId);
+            }
             updateBankUI();
-            updateTeamUI(1);
-            updateTeamUI(2);
         }
 
         function showCardInfo(barcode) {
@@ -597,7 +663,12 @@
                 showCustomAlert(card.name, description, card.emoji);
                 setTimeout(() => {
                     closeCustomAlert();
-                    performCardAction(activeTeam, barcode);
+                    // Pandora's box is a special case and is handled inside performCardAction directly
+                    if (barcode === '0053') {
+                        performCardAction(activeTeam, barcode);
+                    } else {
+                        performCardAction(activeTeam, barcode);
+                    }
                 }, 4000);
             } else {
                 performCardAction(activeTeam, barcode); // Fallback for unknown cards
@@ -1028,6 +1099,7 @@
             updateTeamUI(2);
             updateBankUI();
             renderBattleLog();
+            elements.team1.rfidInput.focus();
             
             // Start random event trigger loop (every 60-120 seconds)
             setInterval(triggerRandomEvent, Math.floor(Math.random() * 60000) + 60000);
