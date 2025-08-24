@@ -16,14 +16,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- QR Code Scanner Library -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #1a1a1a;
-            background-image:
+            background-image: 
                 linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 20px 20px;
@@ -39,12 +36,6 @@
             border-radius: 16px;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .scan-button {
-            transition: all 0.3s ease;
-        }
-        .scan-button:hover {
-            transform: translateY(-3px) scale(1.05);
         }
         .modal-overlay {
             transition: opacity 0.3s ease;
@@ -110,13 +101,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
         
-        #reader {
-            width: 100%;
-            max-width: 500px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
         #gamble-reel {
             text-shadow: 0 0 10px #facc15, 0 0 20px #facc15;
         }
@@ -232,9 +216,9 @@
                         <i class="fa-solid fa-store"></i> ตลาดมืด (250k)
                     </button>
                 </div>
-                <button class="scan-button w-full mt-auto pt-6 py-4 font-pixel text-xl rounded-lg" style="background-color: #38bdf8; box-shadow: 0 0 15px #38bdf8;" onclick="openScanner(1)">
-                    <i class="fa-solid fa-qrcode"></i> SCAN FOR TEAM 1
-                </button>
+                <div class="w-full mt-auto pt-6">
+                    <input type="text" id="team1-rfid-input" class="manual-score-input font-pixel text-xl py-4" placeholder="แตะการ์ด RFID ที่นี่">
+                </div>
             </div>
 
             <!-- Team 2 Panel -->
@@ -269,9 +253,9 @@
                         <i class="fa-solid fa-store"></i> ตลาดมืด (250k)
                     </button>
                 </div>
-                <button class="scan-button w-full mt-auto pt-6 py-4 font-pixel text-xl rounded-lg" style="background-color: #ec4899; box-shadow: 0 0 15px #ec4899;" onclick="openScanner(2)">
-                    <i class="fa-solid fa-qrcode"></i> SCAN FOR TEAM 2
-                </button>
+                <div class="w-full mt-auto pt-6">
+                    <input type="text" id="team2-rfid-input" class="manual-score-input font-pixel text-xl py-4" placeholder="แตะการ์ด RFID ที่นี่">
+                </div>
             </div>
         </div>
 
@@ -284,16 +268,6 @@
     </div>
 
     <!-- Modals -->
-    <div id="scanner-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
-        <div class="modal-content panel p-6 md:p-8 text-center transform scale-95 flex flex-col items-center">
-            <h3 id="modal-title" class="font-pixel text-xl text-white mb-4">SCAN QR CODE</h3>
-            <div id="reader" class="w-64 h-64 md:w-80 md:h-80"></div>
-            <button id="close-scanner-button" class="mt-6 bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition">
-                Cancel
-            </button>
-        </div>
-    </div>
-    
     <div id="alert-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
         <div class="modal-content panel p-8 text-center transform scale-95 flex flex-col items-center max-w-sm">
             <div id="alert-icon" class="text-5xl mb-4"></div>
@@ -337,7 +311,6 @@
 
         let activeTeam = null;
         const feedEvents = [];
-        let html5QrCode = null;
         let lastCardAction = { teamId: null, barcode: null };
         
         let audioCtx;
@@ -345,14 +318,9 @@
         
         const elements = {
             mainTitle: document.getElementById('main-title'),
-            team1: { panel: document.getElementById('team1-panel'), name: document.getElementById('team1-name'), color: document.getElementById('team1-color'), score: document.getElementById('team1-score'), manualScore: document.getElementById('team1-manual-score'), leaderIndicator: document.getElementById('team1-leader-indicator'), debtDisplay: document.getElementById('team1-debt-display'), loanContainer: document.getElementById('team1-loan-container'), buyAmountInput: document.getElementById('team1-buy-amount'), button: document.querySelector('[onclick="openScanner(1)"]') },
-            team2: { panel: document.getElementById('team2-panel'), name: document.getElementById('team2-name'), color: document.getElementById('team2-color'), score: document.getElementById('team2-score'), manualScore: document.getElementById('team2-manual-score'), leaderIndicator: document.getElementById('team2-leader-indicator'), debtDisplay: document.getElementById('team2-debt-display'), loanContainer: document.getElementById('team2-loan-container'), buyAmountInput: document.getElementById('team2-buy-amount'), button: document.querySelector('[onclick="openScanner(2)"]') },
+            team1: { panel: document.getElementById('team1-panel'), name: document.getElementById('team1-name'), color: document.getElementById('team1-color'), score: document.getElementById('team1-score'), manualScore: document.getElementById('team1-manual-score'), leaderIndicator: document.getElementById('team1-leader-indicator'), debtDisplay: document.getElementById('team1-debt-display'), loanContainer: document.getElementById('team1-loan-container'), buyAmountInput: document.getElementById('team1-buy-amount'), rfidInput: document.getElementById('team1-rfid-input') },
+            team2: { panel: document.getElementById('team2-panel'), name: document.getElementById('team2-name'), color: document.getElementById('team2-color'), score: document.getElementById('team2-score'), manualScore: document.getElementById('team2-manual-score'), leaderIndicator: document.getElementById('team2-leader-indicator'), debtDisplay: document.getElementById('team2-debt-display'), loanContainer: document.getElementById('team2-loan-container'), buyAmountInput: document.getElementById('team2-buy-amount'), rfidInput: document.getElementById('team2-rfid-input') },
             feed: document.getElementById('chaos-feed'),
-            scannerModal: document.getElementById('scanner-modal'),
-            scannerModalContent: document.getElementById('scanner-modal').querySelector('.modal-content'),
-            scannerModalTitle: document.getElementById('modal-title'),
-            closeScannerButton: document.getElementById('close-scanner-button'),
-            reader: document.getElementById('reader'),
             summaryButton: document.getElementById('summary-button'),
             resetGameButton: document.getElementById('reset-game-button'),
             trollRobinhoodButton: document.getElementById('troll-robinhood'),
@@ -1086,4 +1054,3 @@
     </script>
 </body>
 </html>
-
