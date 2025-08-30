@@ -512,38 +512,38 @@
             let opponentId = teamId === 1 ? 2 : 1;
 
             switch (barcodeResult) {
-                case '0001': teams[teamId].score += 12000; bankScore -= 12000; logText = `ได้รับ 12,000 คะแนน`; break;
-                case '0002': teams[teamId].score += 14000; bankScore -= 14000; logText = `ได้รับ 14,000 คะแนน`; break;
-                case '0003': teams[teamId].score += 20000; bankScore -= 20000; logText = `ได้รับ 20,000 คะแนน`; break;
-                case '0004': teams[teamId].score += 40000; bankScore -= 40000; logText = `ได้รับโบนัสใหญ่ 40,000 คะแนน!`; break;
-                case '0005': const r1 = Math.floor(Math.random() * 10001) + 10000; teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break;
-                case '0006': const r2 = Math.floor(Math.random() * 25001) + 25000; teams[teamId].score += r2; bankScore -= r2; logText = `สุ่มได้โบนัสใหญ่ ${r2.toLocaleString()} คะแนน!`; break;
-                case '0007': const g1 = Math.floor(teams[teamId].score * 0.05); teams[teamId].score += g1; bankScore -= g1; logText = `ได้รับโบนัส 5% เป็นคะแนน ${g1.toLocaleString()} แต้ม`; break;
-                case '0008': const g2 = Math.floor(teams[teamId].score * 0.10); teams[teamId].score += g2; bankScore -= g2; logText = `ได้รับโบนัส 10% เป็นคะแนน ${g2.toLocaleString()} แต้ม`; break;
-                case '0009': if (teams[teamId].score <= 0) { teams[teamId].score = 15000; bankScore -= 15000; logText = `คะแนนฟื้นกลับมาที่ 15,000!`; } else { logText = `ใช้การ์ดชุบชีวิต แต่ไม่เกิดอะไรขึ้น`; soundType = 'negative';} break;
-                case '0010': teams[teamId].score += 15555; bankScore -= 15555; logText = `ได้รับเลขสวย 15,555 คะแนน!`; break;
-                case '0011': if (teams[teamId].score < teams[opponentId].score) { const diff = Math.floor((teams[opponentId].score - teams[teamId].score) / 2); teams[teamId].score += diff; bankScore -= diff; logText = `ได้รับคะแนนปลอบใจ ${diff.toLocaleString()} แต้ม!`; } else { logText = `ใช้การ์ดปลอบใจ แต่คะแนนนำอยู่แล้ว`; soundType = 'negative'; } break;
-                case '0012': const interest = Math.floor(teams[teamId].score * 0.01); teams[teamId].score += interest; bankScore -= interest; logText = `ได้รับดอกเบี้ย 1% เป็นคะแนน ${interest.toLocaleString()} แต้ม`; break;
-                case '0013': teams[teamId].score += 17777; bankScore -= 17777; logText = `ได้รับเลขนำโชค 17,777 คะแนน!`; break;
-                case '0014': teams[teamId].score += 50000; bankScore -= 50000; logText = `ได้รับโบนัสก้อนโต 50,000 คะแนน!`; break;
-                case '0015': teams[1].score += 15000; teams[2].score += 15000; bankScore -= 30000; teamId = null; logText = `ทุกทีมได้รับ 15,000 คะแนน!`; break;
-                case '0016': const currentTotal = teams[1].score + teams[2].score; const avg = Math.floor(currentTotal / 2); bankScore += currentTotal - (avg*2); teams[1].score = avg; teams[2].score = avg; teamId = null; logText = `คะแนนของทุกทีมถูกปรับมาอยู่ที่ ${avg.toLocaleString()}!`; soundType = 'negative'; break;
-                case '0017': teamId = null; logText = `สนธิสัญญาสงบศึก!`; break;
-                case '0018': amount = currentEvent === 'BLOOD_MOON' ? 30000 : 20000; teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0019': amount = currentEvent === 'BLOOD_MOON' ? 60000 : 40000; teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ปล้นครั้งใหญ่! ขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0020': amount = Math.floor(Math.random() * 10001) + 10000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `สุ่มขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0021': amount = Math.floor(Math.random() * 25001) + 25000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `สุ่มขโมยครั้งใหญ่ ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0022': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ดูดพลัง (${amount.toLocaleString()} คะแนน) จากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0023': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[opponentId].score -= amount; bankScore += amount; logText += `ทำลายคะแนน (${amount.toLocaleString()} แต้ม) ของทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0024': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.30 : 0.20)); teams[opponentId].score -= amount; bankScore += amount; logText += `ทำลายคะแนน (${amount.toLocaleString()} แต้ม) ของทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0025': [teams[teamId].score, teams[opponentId].score] = [teams[opponentId].score, teams[teamId].score]; logText = `พลิกชะตา! สลับคะแนนกับทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
-                case '0026': if (teams[opponentId].score > 25000) { bankScore += teams[opponentId].score - 25000; teams[opponentId].score = 25000; logText = `คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตกลับไปที่ 25,000!`; soundType = 'negative';} else { logText = `พยายามรีเซ็ตคะแนน แต่ไม่สำเร็จ`; } break;
-                case '0027': if (teams[opponentId].score > teams[teamId].score) { amount = Math.floor((teams[opponentId].score - teams[teamId].score) * (currentEvent === 'BLOOD_MOON' ? 0.225 : 0.15)); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `เก็บภาษีคนรวย! ได้รับ ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; } else { logText = `พยายามเก็บภาษี แต่คะแนนน้อยกว่า`; soundType = 'negative'; } break;
-                case '0028': logText = `ทีม ${teams[opponentId].name} โดนคำสาปกระเป๋ารั่ว!`; soundType = 'negative'; break; // Note: Actual effect not implemented
-                case '0029': amount = currentEvent === 'BLOOD_MOON' ? 52500 : 35000; teams[opponentId].score -= amount; bankScore += amount; logText += `ทิ้งระเบิดคะแนน! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break;
-                case '0030': amount = currentEvent === 'BLOOD_MOON' ? 15000 : 10000; teams[opponentId].score -= amount; bankScore += amount; logText += `ปล่อยโรคระบาด! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break; // Note: Continuous effect not implemented
-                case '0031': const s1 = teams[1].score; const s2 = teams[2].score; const lastTwo1 = s1 % 100; const lastTwo2 = s2 % 100; teams[1].score = s1 - lastTwo1 + lastTwo2; teams[2].score = s2 - lastTwo2 + lastTwo1; teamId = null; logText = `เด็กฝึกงานคีย์คะแนนผิด! เลขท้ายคะแนนของทั้งสองทีมสลับกัน!`; soundType = 'negative'; break;
-                case '0032':
+                case '4024369498': teams[teamId].score += 12000; bankScore -= 12000; logText = `ได้รับ 12,000 คะแนน`; break;
+                case '3959943514': teams[teamId].score += 14000; bankScore -= 14000; logText = `ได้รับ 14,000 คะแนน`; break;
+                case '3971035482': teams[teamId].score += 20000; bankScore -= 20000; logText = `ได้รับ 20,000 คะแนน`; break;
+                case '4012917082': teams[teamId].score += 40000; bankScore -= 40000; logText = `ได้รับโบนัสใหญ่ 40,000 คะแนน!`; break;
+                case '4024373594': const r1 = Math.floor(Math.random() * 10001) + 10000; teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break;
+                case '3959947610': const r2 = Math.floor(Math.random() * 25001) + 25000; teams[teamId].score += r2; bankScore -= r2; logText = `สุ่มได้โบนัสใหญ่ ${r2.toLocaleString()} คะแนน!`; break;
+                case '3971039578': const g1 = Math.floor(teams[teamId].score * 0.05); teams[teamId].score += g1; bankScore -= g1; logText = `ได้รับโบนัส 5% เป็นคะแนน ${g1.toLocaleString()} แต้ม`; break;
+                case '4012921178': const g2 = Math.floor(teams[teamId].score * 0.10); teams[teamId].score += g2; bankScore -= g2; logText = `ได้รับโบนัส 10% เป็นคะแนน ${g2.toLocaleString()} แต้ม`; break;
+                case '4024377690': if (teams[teamId].score <= 0) { teams[teamId].score = 15000; bankScore -= 15000; logText = `คะแนนฟื้นกลับมาที่ 15,000!`; } else { logText = `ใช้การ์ดชุบชีวิต แต่ไม่เกิดอะไรขึ้น`; soundType = 'negative';} break;
+                case '3959951706': teams[teamId].score += 15555; bankScore -= 15555; logText = `ได้รับเลขสวย 15,555 คะแนน!`; break;
+                case '3971043674': if (teams[teamId].score < teams[opponentId].score) { const diff = Math.floor((teams[opponentId].score - teams[teamId].score) / 2); teams[teamId].score += diff; bankScore -= diff; logText = `ได้รับคะแนนปลอบใจ ${diff.toLocaleString()} แต้ม!`; } else { logText = `ใช้การ์ดปลอบใจ แต่คะแนนนำอยู่แล้ว`; soundType = 'negative'; } break;
+                case '4012925274': const interest = Math.floor(teams[teamId].score * 0.01); teams[teamId].score += interest; bankScore -= interest; logText = `ได้รับดอกเบี้ย 1% เป็นคะแนน ${interest.toLocaleString()} แต้ม`; break;
+                case '4024381786': teams[teamId].score += 17777; bankScore -= 17777; logText = `ได้รับเลขนำโชค 17,777 คะแนน!`; break;
+                case '3959955802': teams[teamId].score += 50000; bankScore -= 50000; logText = `ได้รับโบนัสก้อนโต 50,000 คะแนน!`; break;
+                case '4012929370': teams[1].score += 15000; teams[2].score += 15000; bankScore -= 30000; teamId = null; logText = `ทุกทีมได้รับ 15,000 คะแนน!`; break;
+                case '4024385882': const currentTotal = teams[1].score + teams[2].score; const avg = Math.floor(currentTotal / 2); bankScore += currentTotal - (avg*2); teams[1].score = avg; teams[2].score = avg; teamId = null; logText = `คะแนนของทุกทีมถูกปรับมาอยู่ที่ ${avg.toLocaleString()}!`; soundType = 'negative'; break;
+                case '3959959898': teamId = null; logText = `สนธิสัญญาสงบศึก!`; break;
+                case '3971047770': amount = currentEvent === 'BLOOD_MOON' ? 30000 : 20000; teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '4012933466': amount = currentEvent === 'BLOOD_MOON' ? 60000 : 40000; teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ปล้นครั้งใหญ่! ขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '4024389978': amount = Math.floor(Math.random() * 10001) + 10000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `สุ่มขโมย ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '3959963994': amount = Math.floor(Math.random() * 25001) + 25000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `สุ่มขโมยครั้งใหญ่ ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '3971051866': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `ดูดพลัง (${amount.toLocaleString()} คะแนน) จากทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '4012937562': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[opponentId].score -= amount; bankScore += amount; logText += `ทำลายคะแนน (${amount.toLocaleString()} แต้ม) ของทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '4024394074': amount = Math.floor(teams[opponentId].score * (currentEvent === 'BLOOD_MOON' ? 0.30 : 0.20)); teams[opponentId].score -= amount; bankScore += amount; logText += `ทำลายคะแนน (${amount.toLocaleString()} แต้ม) ของทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '3959968090': [teams[teamId].score, teams[opponentId].score] = [teams[opponentId].score, teams[teamId].score]; logText = `พลิกชะตา! สลับคะแนนกับทีม ${teams[opponentId].name}!`; soundType = 'negative'; break;
+                case '3971055962': if (teams[opponentId].score > 25000) { bankScore += teams[opponentId].score - 25000; teams[opponentId].score = 25000; logText = `คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตกลับไปที่ 25,000!`; soundType = 'negative';} else { logText = `พยายามรีเซ็ตคะแนน แต่ไม่สำเร็จ`; } break;
+                case '4012941658': if (teams[opponentId].score > teams[teamId].score) { amount = Math.floor((teams[opponentId].score - teams[teamId].score) * (currentEvent === 'BLOOD_MOON' ? 0.225 : 0.15)); teams[teamId].score += amount; teams[opponentId].score -= amount; logText += `เก็บภาษีคนรวย! ได้รับ ${amount.toLocaleString()} คะแนนจากทีม ${teams[opponentId].name}!`; } else { logText = `พยายามเก็บภาษี แต่คะแนนน้อยกว่า`; soundType = 'negative'; } break;
+                case '4024398170': logText = `ทีม ${teams[opponentId].name} โดนคำสาปกระเป๋ารั่ว!`; soundType = 'negative'; break; // Note: Actual effect not implemented
+                case '3959972186': amount = currentEvent === 'BLOOD_MOON' ? 52500 : 35000; teams[opponentId].score -= amount; bankScore += amount; logText += `ทิ้งระเบิดคะแนน! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break;
+                case '3971060058': amount = currentEvent === 'BLOOD_MOON' ? 15000 : 10000; teams[opponentId].score -= amount; bankScore += amount; logText += `ปล่อยโรคระบาด! ทีม ${teams[opponentId].name} เสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break; // Note: Continuous effect not implemented
+                case '4012945754': const s1 = teams[1].score; const s2 = teams[2].score; const lastTwo1 = s1 % 100; const lastTwo2 = s2 % 100; teams[1].score = s1 - lastTwo1 + lastTwo2; teams[2].score = s2 - lastTwo2 + lastTwo1; teamId = null; logText = `เด็กฝึกงานคีย์คะแนนผิด! เลขท้ายคะแนนของทั้งสองทีมสลับกัน!`; soundType = 'negative'; break;
+                case '4024402266':
                     const originalScore1 = teams[1].score;
                     const originalScore2 = teams[2].score;
                     teams[1].score = Math.floor(originalScore1 / 2);
@@ -554,26 +554,26 @@
                     logText = `ค่าเงินเฟ้อ! คะแนนของทุกทีมถูกหารสอง!`;
                     soundType = 'negative';
                     break;
-                case '0033': const leaderId = teams[1].score > teams[2].score ? 1 : 2; const loserId = leaderId === 1 ? 2 : 1; if(teams[1].score !== teams[2].score) { amount = Math.floor(teams[leaderId].score * (currentEvent === 'BLOOD_MOON' ? 0.45 : 0.30)); teams[leaderId].score -= amount; bankScore += amount; logText += `สรรพากรลง! ทีมผู้นำ (${teams[leaderId].name}) โดนหัก ${amount.toLocaleString()} คะแนน!`; teamId = loserId; soundType = 'negative'; } else { logText = `สรรพากรมา แต่คะแนนเท่ากัน เลยรอดตัวไป!`; teamId = null; } break;
-                case '0034': if (lastCardAction.barcode) { addLog(null, `เดจาวู! การ์ดใบที่แล้วทำงานอีกครั้ง!`); performCardAction(lastCardAction.teamId, lastCardAction.barcode, true); return; } else { logText = `ใช้เดจาวู แต่ไม่มีการ์ดใบก่อนหน้า...`; teamId = null; soundType = 'negative';} break;
-                case '0035': teamId = null; logText = `วันหยุดนักขัตฤกษ์!`; soundType = 'negative'; break; // Note: Actual effect not implemented
-                case '0036': if (teams[teamId].score >= 30000) { teams[teamId].score -= 30000; bankScore += 30000; if (Math.random() < 0.5) { teams[teamId].score += 60000; bankScore -= 60000; logText = `วัดดวง... และชนะ! ได้รับ 60,000 คะแนน!`; } else { logText = `วัดดวง... และแพ้! เสีย 30,000 คะแนนไปฟรีๆ!`; soundType = 'negative'; } } else { logText = `พยายามวัดดวง แต่คะแนนไม่พอ!`; soundType = 'negative'; } break;
-                case '0037': logText = `เปิดใช้งาน "สวมรอย"!`; break; // Note: Actual effect not implemented
-                case '0038': logText = `เปิด "หลุมดำ"!`; break; // Note: Actual effect not implemented
-                case '0039': logText = `ปล่อยไวรัสเรียกค่าไถ่!`; soundType = 'negative'; break; // Note: Actual effect not implemented
-                case '0040': teams[teamId].score -= 10000; teams[opponentId].score += 5000; bankScore += 5000; logText = `มอบของขวัญกวนๆ! ทีมเราเสีย 10,000 แต่ทีม ${teams[opponentId].name} ได้รับ 5,000!`; soundType = 'negative'; break;
-                case '0041': case '0042': case '0043': case '0044': case '0045':
+                case '3959976282': const leaderId = teams[1].score > teams[2].score ? 1 : 2; const loserId = leaderId === 1 ? 2 : 1; if(teams[1].score !== teams[2].score) { amount = Math.floor(teams[leaderId].score * (currentEvent === 'BLOOD_MOON' ? 0.45 : 0.30)); teams[leaderId].score -= amount; bankScore += amount; logText += `สรรพากรลง! ทีมผู้นำ (${teams[leaderId].name}) โดนหัก ${amount.toLocaleString()} คะแนน!`; teamId = loserId; soundType = 'negative'; } else { logText = `สรรพากรมา แต่คะแนนเท่ากัน เลยรอดตัวไป!`; teamId = null; } break;
+                case '3971064154': if (lastCardAction.barcode) { addLog(null, `เดจาวู! การ์ดใบที่แล้วทำงานอีกครั้ง!`); performCardAction(lastCardAction.teamId, lastCardAction.barcode, true); return; } else { logText = `ใช้เดจาวู แต่ไม่มีการ์ดใบก่อนหน้า...`; teamId = null; soundType = 'negative';} break;
+                case '4012949850': teamId = null; logText = `วันหยุดนักขัตฤกษ์!`; soundType = 'negative'; break; // Note: Actual effect not implemented
+                case '4024406362': if (teams[teamId].score >= 30000) { teams[teamId].score -= 30000; bankScore += 30000; if (Math.random() < 0.5) { teams[teamId].score += 60000; bankScore -= 60000; logText = `วัดดวง... และชนะ! ได้รับ 60,000 คะแนน!`; } else { logText = `วัดดวง... และแพ้! เสีย 30,000 คะแนนไปฟรีๆ!`; soundType = 'negative'; } } else { logText = `พยายามวัดดวง แต่คะแนนไม่พอ!`; soundType = 'negative'; } break;
+                case '3959980378': logText = `เปิดใช้งาน "สวมรอย"!`; break; // Note: Actual effect not implemented
+                case '3971068250': logText = `เปิด "หลุมดำ"!`; break; // Note: Actual effect not implemented
+                case '4012953946': logText = `ปล่อยไวรัสเรียกค่าไถ่!`; soundType = 'negative'; break; // Note: Actual effect not implemented
+                case '4024410458': teams[teamId].score -= 10000; teams[opponentId].score += 5000; bankScore += 5000; logText = `มอบของขวัญกวนๆ! ทีมเราเสีย 10,000 แต่ทีม ${teams[opponentId].name} ได้รับ 5,000!`; soundType = 'negative'; break;
+                case '4066906458': case '4077142362': case '4117746010': case '4066910554': case '4077146458':
                     const reps = Math.floor(Math.random() * 21) + 10;
                     let unit = 'ครั้ง';
-                    if (barcodeResult === '0043') unit = 'วินาที';
-                    if (barcodeResult === '0044') unit = 'รอบ';
-                    if (barcodeResult === '0045') unit = 'วินาที';
+                    if (barcodeResult === '4117746010') unit = 'วินาที';
+                    if (barcodeResult === '4066910554') unit = 'รอบ';
+                    if (barcodeResult === '4077146458') unit = 'วินาที';
                     logText = `สั่งให้ทีม ${teams[opponentId].name} ${cardDatabase[barcodeResult].description.replace('ทีมตรงข้ามต้อง', '')} ${reps} ${unit}!`;
                     soundType = 'negative';
                     break;
                 // --- LEGENDARY CARDS ---
-                case '0046': teams[teamId].score += 500000; bankScore -= 500000; logText = `เข้าสู่ยุคทอง! ได้รับ 500,000 คะแนน!`; break;
-                case '0047':
+                case '4127945050': teams[teamId].score += 500000; bankScore -= 500000; logText = `เข้าสู่ยุคทอง! ได้รับ 500,000 คะแนน!`; break;
+                case '4117750106':
                     const originalOpponentScore = teams[opponentId].score;
                     teams[opponentId].score = Math.floor(originalOpponentScore / 2);
                     const loss = originalOpponentScore - teams[opponentId].score;
@@ -581,12 +581,12 @@
                     logText = `เกิดวิกฤตเศรษฐกิจ! คะแนนของทีม ${teams[opponentId].name} ถูกหารสอง!`;
                     soundType = 'negative';
                     break;
-                case '0048': if(teams[teamId].debt) { const debtAmount = teams[teamId].debt.amount; clearInterval(teams[teamId].debt.interval); teams[teamId].debt = null; teams[opponentId].debt = { principal: debtAmount, amount: debtAmount, interval: setInterval(() => { const interest = Math.floor(teams[opponentId].debt.principal * 0.20); teams[opponentId].debt.amount += interest; addLog(opponentId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teams[opponentId].debt.amount.toLocaleString()}`); updateTeamUI(opponentId); }, 600000)}; logText = `ล้างหนี้สำเร็จ! หนี้ทั้งหมดถูกโอนไปให้ทีม ${teams[opponentId].name}!`; } else { logText = `พยายามใช้การ์ดล้างหนี้ แต่ไม่มีหนี้สิน!`; soundType = 'negative'; } break;
-                case '0049': if (teams[teamId].score < teams[opponentId].score) { amount = (teams[opponentId].score + 1) - teams[teamId].score; teams[teamId].score += amount; bankScore -= amount; logText = `ขึ้นเป็นราชา! คะแนนถูกปรับให้แซง ${teams[opponentId].name}!`; } else { logText = `ใช้การ์ดผู้สร้างราชา แต่คะแนนนำอยู่แล้ว!`; soundType = 'negative'; } break;
-                case '0050': const leader = teams[1].score > teams[2].score ? 1 : 2; const trailer = leader === 1 ? 2 : 1; if(teams[1].score !== teams[2].score && teamId === trailer) { amount = Math.floor(teams[leader].score * 0.5); teams[trailer].score += amount; teams[leader].score -= amount; logText = `ปฏิวัติ! ทีม ${teams[trailer].name} ขโมย 50% ของคะแนนจากทีม ${teams[leader].name}!`; } else { logText = `พยายามปฏิวัติแต่ไม่สำเร็จ!`; soundType = 'negative'; } break;
-                case '0051': bankScore += teams[opponentId].score; teams[opponentId].score = 0; logText = `เกมศูนย์! คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตเป็น 0!`; soundType = 'negative'; break;
-                case '0052': teams[teamId].score += 1000000; bankScore -= 1000000; logText = `สวรรค์เมตตา! ได้รับ 1,000,000 คะแนน!`; break;
-                case '0053':
+                case '4127949146': if(teams[teamId].debt) { const debtAmount = teams[teamId].debt.amount; clearInterval(teams[teamId].debt.interval); teams[teamId].debt = null; teams[opponentId].debt = { principal: debtAmount, amount: debtAmount, interval: setInterval(() => { const interest = Math.floor(teams[opponentId].debt.principal * 0.20); teams[opponentId].debt.amount += interest; addLog(opponentId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teams[opponentId].debt.amount.toLocaleString()}`); updateTeamUI(opponentId); }, 600000)}; logText = `ล้างหนี้สำเร็จ! หนี้ทั้งหมดถูกโอนไปให้ทีม ${teams[opponentId].name}!`; } else { logText = `พยายามใช้การ์ดล้างหนี้ แต่ไม่มีหนี้สิน!`; soundType = 'negative'; } break;
+                case '4066914650': if (teams[teamId].score < teams[opponentId].score) { amount = (teams[opponentId].score + 1) - teams[teamId].score; teams[teamId].score += amount; bankScore -= amount; logText = `ขึ้นเป็นราชา! คะแนนถูกปรับให้แซง ${teams[opponentId].name}!`; } else { logText = `ใช้การ์ดผู้สร้างราชา แต่คะแนนนำอยู่แล้ว!`; soundType = 'negative'; } break;
+                case '4077150554': const leader = teams[1].score > teams[2].score ? 1 : 2; const trailer = leader === 1 ? 2 : 1; if(teams[1].score !== teams[2].score && teamId === trailer) { amount = Math.floor(teams[leader].score * 0.5); teams[trailer].score += amount; teams[leader].score -= amount; logText = `ปฏิวัติ! ทีม ${teams[trailer].name} ขโมย 50% ของคะแนนจากทีม ${teams[leader].name}!`; } else { logText = `พยายามปฏิวัติแต่ไม่สำเร็จ!`; soundType = 'negative'; } break;
+                case '4117754202': bankScore += teams[opponentId].score; teams[opponentId].score = 0; logText = `เกมศูนย์! คะแนนของทีม ${teams[opponentId].name} ถูกรีเซ็ตเป็น 0!`; soundType = 'negative'; break;
+                case '4127953242': teams[teamId].score += 1000000; bankScore -= 1000000; logText = `สวรรค์เมตตา! ได้รับ 1,000,000 คะแนน!`; break;
+                case '':
                     teamId = null; // System event
                     logText = `เปิดกล่องแพนโดร่า! ความโกลาหลบังเกิด!`;
                     soundType = 'negative';
@@ -613,8 +613,8 @@
                        lastCardAction = { teamId, barcode: barcodeResult };
                     }
                     return; // Exit function early
-                case '0054': amount = teams[teamId].score - teams[opponentId].score; bankScore -= amount; teams[opponentId].score = teams[teamId].score; logText = `ภาพสะท้อน! คะแนนของทีม ${teams[opponentId].name} ถูกปรับให้เท่ากับทีมเรา!`; soundType = 'negative'; break;
-                case '0055':
+                case '4066918746': amount = teams[teamId].score - teams[opponentId].score; bankScore -= amount; teams[opponentId].score = teams[teamId].score; logText = `ภาพสะท้อน! คะแนนของทีม ${teams[opponentId].name} ถูกปรับให้เท่ากับทีมเรา!`; soundType = 'negative'; break;
+                case '4077154650':
                     const lossTeam1 = Math.floor(teams[1].score * 0.5);
                     const lossTeam2 = Math.floor(teams[2].score * 0.5);
                     teams[1].score -= lossTeam1;
