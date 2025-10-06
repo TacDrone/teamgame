@@ -579,7 +579,7 @@
                 case '3959943514': teams[teamId].score += 14000; bankScore -= 14000; logText = `ได้รับ 14,000 คะแนน`; break;
                 case '3971035482': teams[teamId].score += 20000; bankScore -= 20000; logText = `ได้รับ 20,000 คะแนน`; break;
                 case '4012917082': teams[teamId].score += 40000; bankScore -= 40000; logText = `ได้รับโบนัสใหญ่ 40,000 คะแนน!`; break;
-                case '4024373594': const r1 = Math.floor(Math.random() * 14024369498) + 10000; teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break;
+                case '4024373594': const r1 = Math.floor(Math.random() * 14024) + 10000; teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break;
                 case '3959947610': const r2 = Math.floor(Math.random() * 25001) + 25000; teams[teamId].score += r2; bankScore -= r2; logText = `สุ่มได้โบนัสใหญ่ ${r2.toLocaleString()} คะแนน!`; break;
                 case '3971039578': const g1 = Math.floor(teams[teamId].score * 0.05); teams[teamId].score += g1; bankScore -= g1; logText = `ได้รับโบนัส 5% เป็นคะแนน ${g1.toLocaleString()} แต้ม`; break;
                 case '4012921178': const g2 = Math.floor(teams[teamId].score * 0.10); teams[teamId].score += g2; bankScore -= g2; logText = `ได้รับโบนัส 10% เป็นคะแนน ${g2.toLocaleString()} แต้ม`; break;
