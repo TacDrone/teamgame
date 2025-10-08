@@ -212,8 +212,8 @@
                     <div class="flex gap-2">
                          <input type="number" id="team1-buy-amount" class="manual-score-input w-1/3" placeholder="Qty">
                          <button class="w-2/3 py-2 text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 transition text-white" onclick="handleBuyCards(1)">
-                            <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
-                        </button>
+                             <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
+                         </button>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <button class="w-full py-2 text-sm font-bold rounded-lg bg-yellow-500 hover:bg-yellow-600 transition text-gray-900" onclick="handleGamble(1)">
@@ -249,8 +249,8 @@
                     <div class="flex gap-2">
                          <input type="number" id="team2-buy-amount" class="manual-score-input w-1/3" placeholder="Qty">
                          <button class="w-2/3 py-2 text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 transition text-white" onclick="handleBuyCards(2)">
-                            <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
-                        </button>
+                             <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
+                         </button>
                     </div>
                      <div class="grid grid-cols-2 gap-2">
                         <button class="w-full py-2 text-sm font-bold rounded-lg bg-yellow-500 hover:bg-yellow-600 transition text-gray-900" onclick="handleGamble(2)">
@@ -365,7 +365,8 @@
         
         let audioCtx;
         let currentEvent = null;
-        
+        let teamStatuses = {};
+
         const elements = {
             mainTitle: document.getElementById('main-title'),
             teamsGrid: document.getElementById('teams-grid'),
@@ -398,8 +399,6 @@
             bankScore: document.getElementById('bank-score'),
         };
         
-        // SUGGESTION: Adding a property like `isLegendary: true` to legendary cards
-        // would make filtering for the Black Market more robust than comparing barcode strings.
         const cardDatabase = {
             '4024369498': { emoji: '💰', name: 'เงินก้นถุง', description: 'ได้รับ 12,000 คะแนน' },
             '3959943514': { emoji: '💵', name: 'เงินเดือนออก', description: 'ได้รับ 14,000 คะแนน' },
@@ -456,6 +455,19 @@
             '0053': { emoji: ' Pandora\'s Box', name: 'กล่องแพนโดร่า', description: 'สุ่มการ์ดในตำนานใส่ทุกทีม!', isLegendary: true },
             '4066918746': { emoji: '👯', name: 'ภาพสะท้อน', description: 'คะแนนของทีมอื่นจะถูกปรับให้เท่ากับทีมเรา!', isLegendary: true },
             '4077154650': { emoji: '☄️', name: 'วันสิ้นโลก', description: 'ทุกทีมเสีย 50% ของคะแนน แต่ทีมอื่นเสียเพิ่มอีก 100,000!', isLegendary: true },
+            // Secret Cards Start
+            '1000000001': { emoji: '🛡️', name: 'โล่ป้องกัน', description: 'ป้องกันการ์ดโจมตีที่ส่งผลเสียโดยตรง 1 ครั้ง', isSecret: true },
+            '1000000002': { emoji: '🔄', name: 'สวนกลับ', description: 'สะท้อนผลการ์ดโจมตีครั้งถัดไปกลับไปยังผู้ใช้', isSecret: true },
+            '1000000003': { emoji: '🏃‍♂️', name: 'หลบเลี่ยงภาษี', description: 'การ์ด \'สรรพากรลง\' ครั้งถัดไปจะไร้ผลกับทีมเรา', isSecret: true },
+            '1000000004': { emoji: '🌱', name: 'ลงทุนระยะยาว', description: 'จ่าย 20,000 คะแนนตอนนี้ เพื่อรับ 100,000 คะแนนในอีก 5 นาที', isSecret: true },
+            '1000000005': { emoji: '🎉', name: 'ถูกล็อตโต้', description: 'รับแจ็คพอต 300,000 คะแนนจากธนาคาร!', isSecret: true },
+            '1000000006': { emoji: '✖️2️⃣', name: 'ตัวคูณคะแนน', description: 'คะแนนบวกที่ได้จากการ์ดใบถัดไปจะถูกคูณสอง', isSecret: true },
+            '1000000007': { emoji: '🏦💥', name: 'ปล้นธนาคาร', description: 'ขโมย 0.0001% ของเงินธนาคารทั้งหมด!', isSecret: true },
+            '1000000008': { emoji: '🪂', name: 'ร่มชูชีพทองคำ', description: 'หากทีมของคุณอยู่อันดับสุดท้าย คะแนนจะถูกปรับขึ้นเป็นครึ่งหนึ่งของทีมที่นำอยู่', isSecret: true },
+            '1000000009': { emoji: '🌌', name: 'เดิมพันจักรวาล', description: 'สุ่มคะแนนระหว่าง -250,000 ถึง +500,000!', isSecret: true },
+            '1000000010': { emoji: '💫', name: 'คะแนนวิปลาส', description: 'สุ่มสลับคะแนนของทุกทีม!', isSecret: true },
+            '1000000011': { emoji: '👑💰', name: 'ค่าไถ่ราชา', description: 'ทีมที่นำอยู่ต้องจ่าย 50,000 คะแนนให้ทุกทีมที่ตามหลัง', isSecret: true },
+            // Secret Cards End
         };
 
         function initAudio() {
@@ -483,13 +495,24 @@
                     for(let i = 0; i < duration * 10; i++) {
                         oscillator.frequency.setValueAtTime(notes[Math.floor(Math.random() * notes.length)], now + i * 0.1);
                     }
-                    // CORRECTED: The gain value was a barcode string. Changed to a proper numeric value.
                     gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
                     break;
                 case 'end': oscillator.type = 'sawtooth'; gainNode.gain.setValueAtTime(0.5, now); oscillator.frequency.setValueAtTime(880, now); oscillator.frequency.setValueAtTime(440, now + 0.1); oscillator.frequency.setValueAtTime(880, now + 0.2); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5); break;
             }
             oscillator.start(now);
             oscillator.stop(now + duration);
+        }
+        
+        function initializeTeamStatuses() {
+            teamStatuses = {};
+            for (let i = 1; i <= 3; i++) {
+                teamStatuses[i] = {
+                    isShielded: false,
+                    hasCounter: false,
+                    taxEvasion: false,
+                    scoreMultiplier: 1,
+                };
+            }
         }
 
         function updateLeaderIndicator() {
@@ -571,123 +594,186 @@
             let soundType = 'positive';
             let amount = 0;
             
-            const isAttackCard = barcodeResult > '3959959898';
+            const isAttackCard = ['3971047770', '4012933466', '4024389978', '3959963994', '3971051866', '4012937562', '4024394074', '3959968090', '3971055962', '4012941658', '3959972186', '3959976282', '4024410458', '4117750106', '4117754202', '4077154650'].includes(barcodeResult);
+
             if (currentEvent === 'BLOOD_MOON' && isAttackCard) {
                 logText += '[BLOOD MOON!] ';
             }
 
             switch (barcodeResult) {
                 // Self-Buff cards
-                case '4024369498': teams[teamId].score += 12000; bankScore -= 12000; logText = `ได้รับ 12,000 คะแนน`; break;
-                case '3959943514': teams[teamId].score += 14000; bankScore -= 14000; logText = `ได้รับ 14,000 คะแนน`; break;
-                case '3971035482': teams[teamId].score += 20000; bankScore -= 20000; logText = `ได้รับ 20,000 คะแนน`; break;
-                case '4012917082': teams[teamId].score += 40000; bankScore -= 40000; logText = `ได้รับโบนัสใหญ่ 40,000 คะแนน!`; break;
-                case '4024373594': const r1 = Math.floor(Math.random() * 10001) + 10000; teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break; // CORRECTED: Range was incorrect
-                case '3959947610': const r2 = Math.floor(Math.random() * 25001) + 25000; teams[teamId].score += r2; bankScore -= r2; logText = `สุ่มได้โบนัสใหญ่ ${r2.toLocaleString()} คะแนน!`; break;
-                case '3971039578': const g1 = Math.floor(teams[teamId].score * 0.05); teams[teamId].score += g1; bankScore -= g1; logText = `ได้รับโบนัส 5% เป็นคะแนน ${g1.toLocaleString()} แต้ม`; break;
-                case '4012921178': const g2 = Math.floor(teams[teamId].score * 0.10); teams[teamId].score += g2; bankScore -= g2; logText = `ได้รับโบนัส 10% เป็นคะแนน ${g2.toLocaleString()} แต้ม`; break;
+                case '4024369498': 
+                    let gain1 = 12000; 
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += gain1; bankScore -= gain1; logText = `ได้รับ ${gain1.toLocaleString()} คะแนน`; break;
+                case '3959943514': 
+                    let gain2 = 14000;
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += gain2; bankScore -= gain2; logText = `ได้รับ ${gain2.toLocaleString()} คะแนน`; break;
+                case '3971035482': 
+                    let gain3 = 20000;
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain3 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += gain3; bankScore -= gain3; logText = `ได้รับ ${gain3.toLocaleString()} คะแนน`; break;
+                case '4012917082':
+                    let gain4 = 40000;
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain4 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += gain4; bankScore -= gain4; logText = `ได้รับโบนัสใหญ่ ${gain4.toLocaleString()} คะแนน!`; break;
+                case '4024373594': 
+                    let r1 = Math.floor(Math.random() * 10001) + 10000; 
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { r1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break;
+                case '3959947610': 
+                    let r2 = Math.floor(Math.random() * 25001) + 25000; 
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { r2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += r2; bankScore -= r2; logText = `สุ่มได้โบนัสใหญ่ ${r2.toLocaleString()} คะแนน!`; break;
+                case '3971039578': 
+                    let g1 = Math.floor(teams[teamId].score * 0.05); 
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { g1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += g1; bankScore -= g1; logText = `ได้รับโบนัส 5% เป็นคะแนน ${g1.toLocaleString()} แต้ม`; break;
+                case '4012921178': 
+                    let g2 = Math.floor(teams[teamId].score * 0.10); 
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { g2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += g2; bankScore -= g2; logText = `ได้รับโบนัส 10% เป็นคะแนน ${g2.toLocaleString()} แต้ม`; break;
                 case '4024377690': if (teams[teamId].score <= 0) { teams[teamId].score = 15000; bankScore -= 15000; logText = `คะแนนฟื้นกลับมาที่ 15,000!`; } else { logText = `ใช้การ์ดชุบชีวิต แต่ไม่เกิดอะไรขึ้น`; soundType = 'negative';} break;
-                case '3959951706': teams[teamId].score += 15555; bankScore -= 15555; logText = `ได้รับเลขสวย 15,555 คะแนน!`; break;
-                case '3971043674': const leaderForCatchup = getLeader(); if (leaderForCatchup.id && teams[teamId].score < leaderForCatchup.score) { const diff = Math.floor((leaderForCatchup.score - teams[teamId].score) / 2); teams[teamId].score += diff; bankScore -= diff; logText = `ได้รับคะแนนปลอบใจ ${diff.toLocaleString()} แต้ม!`; } else { logText = `ใช้การ์ดปลอบใจ แต่คะแนนนำอยู่แล้ว`; soundType = 'negative'; } break;
-                case '4012925274': const interest = Math.floor(teams[teamId].score * 0.01); teams[teamId].score += interest; bankScore -= interest; logText = `ได้รับดอกเบี้ย 1% เป็นคะแนน ${interest.toLocaleString()} แต้ม`; break;
-                case '4024381786': teams[teamId].score += 17777; bankScore -= 17777; logText = `ได้รับเลขนำโชค 17,777 คะแนน!`; break;
-                case '3959955802': teams[teamId].score += 50000; bankScore -= 50000; logText = `ได้รับโบนัสก้อนโต 50,000 คะแนน!`; break;
+                case '3959951706': 
+                    let gain5 = 15555;
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain5 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += gain5; bankScore -= gain5; logText = `ได้รับเลขสวย ${gain5.toLocaleString()} คะแนน!`; break;
+                case '3971043674': const leaderForCatchup = getLeader(); if (leaderForCatchup.id && teams[teamId].score < leaderForCatchup.score) { let diff = Math.floor((leaderForCatchup.score - teams[teamId].score) / 2); if (teamStatuses[teamId]?.scoreMultiplier > 1) { diff *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += diff; bankScore -= diff; logText = `ได้รับคะแนนปลอบใจ ${diff.toLocaleString()} แต้ม!`; } else { logText = `ใช้การ์ดปลอบใจ แต่คะแนนนำอยู่แล้ว`; soundType = 'negative'; } break;
+                case '4012925274': 
+                    let interest = Math.floor(teams[teamId].score * 0.01); 
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { interest *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += interest; bankScore -= interest; logText = `ได้รับดอกเบี้ย 1% เป็นคะแนน ${interest.toLocaleString()} แต้ม`; break;
+                case '4024381786':
+                    let gain6 = 17777;
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain6 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += gain6; bankScore -= gain6; logText = `ได้รับเลขนำโชค ${gain6.toLocaleString()} คะแนน!`; break;
+                case '3959955802':
+                    let gain7 = 50000;
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain7 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += gain7; bankScore -= gain7; logText = `ได้รับโบนัสก้อนโต ${gain7.toLocaleString()} คะแนน!`; break;
+                
                 // Global cards
-                case '4012929370': getActiveTeams().forEach(id => { teams[id].score += 15000; }); bankScore -= 15000 * numberOfTeams; teamId = null; logText = `ทุกทีมได้รับ 15,000 คะแนน!`; break;
+                case '4012929370': getActiveTeams().forEach(id => { let gain8 = 15000; if(id === teamId && teamStatuses[id]?.scoreMultiplier > 1) { gain8 *= teamStatuses[id].scoreMultiplier; addLog(id, `x${teamStatuses[id].scoreMultiplier} Multiplier!`); teamStatuses[id].scoreMultiplier = 1;} teams[id].score += gain8; bankScore -= gain8; }); teamId = null; logText = `ทุกทีมได้รับ 15,000 คะแนน!`; break;
                 case '4024385882': const totalScore = getActiveTeams().reduce((sum, id) => sum + teams[id].score, 0); const avg = Math.floor(totalScore / numberOfTeams); bankScore += totalScore - (avg * numberOfTeams); getActiveTeams().forEach(id => { teams[id].score = avg; }); teamId = null; logText = `คะแนนของทุกทีมถูกปรับมาอยู่ที่ ${avg.toLocaleString()}!`; soundType = 'negative'; break;
-                case '3959959898': teamId = null; logText = `สนธิสัญญาสงบศึก!`; break;
+                case '3959959898': teamId = null; initializeTeamStatuses(); logText = `สนธิสัญญาสงบศึก! สถานะพิเศษทั้งหมดถูกล้าง!`; break;
                 case '4012945754': const lastTwoDigits = getActiveTeams().map(id => teams[id].score % 100); getActiveTeams().forEach((id, index) => { const nextIndex = (index + 1) % numberOfTeams; teams[id].score = (teams[id].score - (teams[id].score % 100)) + lastTwoDigits[nextIndex]; }); teamId = null; logText = `เด็กฝึกงานคีย์คะแนนผิด! เลขท้ายคะแนนของทุกทีมสลับกัน!`; soundType = 'negative'; break;
                 case '4024402266': getActiveTeams().forEach(id => { const originalScore = teams[id].score; teams[id].score = Math.floor(originalScore / 2); bankScore += originalScore - teams[id].score; }); teamId = null; logText = `ค่าเงินเฟ้อ! คะแนนของทุกทีมถูกหารสอง!`; soundType = 'negative'; break;
-                // Attack cards (affect all opponents)
-                case '3971047770': amount = currentEvent === 'BLOOD_MOON' ? 30000 : 20000; opponentIds.forEach(id => teams[id].score -= amount); teams[teamId].score += amount * opponentIds.length; logText += `ขโมย ${amount.toLocaleString()} คะแนนจากทีมอื่น!`; soundType = 'negative'; break;
-                case '4012933466': amount = currentEvent === 'BLOOD_MOON' ? 60000 : 40000; opponentIds.forEach(id => teams[id].score -= amount); teams[teamId].score += amount * opponentIds.length; logText += `ปล้นครั้งใหญ่! ขโมย ${amount.toLocaleString()} คะแนนจากทีมอื่น!`; soundType = 'negative'; break;
-                case '4024389978': amount = Math.floor(Math.random() * 10001) + 10000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); opponentIds.forEach(id => teams[id].score -= amount); teams[teamId].score += amount * opponentIds.length; logText += `สุ่มขโมย ${amount.toLocaleString()} คะแนนจากทีมอื่น!`; soundType = 'negative'; break; // CORRECTED: Value was a barcode
-                case '3959963994': amount = Math.floor(Math.random() * 25001) + 25000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); opponentIds.forEach(id => teams[id].score -= amount); teams[teamId].score += amount * opponentIds.length; logText += `สุ่มขโมยครั้งใหญ่ ${amount.toLocaleString()} คะแนนจากทีมอื่น!`; soundType = 'negative'; break;
-                case '3971051866': opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[teamId].score += amount; teams[id].score -= amount; }); logText += `ดูดพลัง 10% จากทีมอื่น!`; soundType = 'negative'; break;
-                case '4012937562': opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); teams[id].score -= amount; bankScore += amount; }); logText += `ทำลาย 10% ของคะแนนทีมอื่น!`; soundType = 'negative'; break;
-                case '4024394074': opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.30 : 0.20)); teams[id].score -= amount; bankScore += amount; }); logText += `ทำลาย 20% ของคะแนนทีมอื่น!`; soundType = 'negative'; break;
-                case '3959968090': const leaderToSwap = getLeader(); if (leaderToSwap.id && leaderToSwap.id !== teamId) { [teams[teamId].score, teams[leaderToSwap.id].score] = [teams[leaderToSwap.id].score, teams[teamId].score]; logText = `พลิกชะตา! สลับคะแนนกับทีมผู้นำ (${teams[leaderToSwap.id].name})!`; soundType = 'negative'; } else { logText = `พยายามสลับคะแนน แต่เป็นผู้นำอยู่แล้วหรือไม่มีผู้นำชัดเจน`; soundType = 'negative'; } break;
-                case '3971055962': opponentIds.forEach(id => { if (teams[id].score > 25000) { bankScore += teams[id].score - 25000; teams[id].score = 25000; } }); logText = `รีเซ็ตคะแนนทีมอื่นเหลือ 25,000!`; soundType = 'negative'; break;
-                case '4012941658': const leaderToTax = getLeader(); if (leaderToTax.id && leaderToTax.id !== teamId) { amount = Math.floor((leaderToTax.score - teams[teamId].score) * (currentEvent === 'BLOOD_MOON' ? 0.225 : 0.15)); teams[teamId].score += amount; teams[leaderToTax.id].score -= amount; logText += `เก็บภาษีคนรวย! ได้รับ ${amount.toLocaleString()} คะแนนจากทีม ${teams[leaderToTax.id].name}!`; } else { logText = `พยายามเก็บภาษี แต่ไม่สำเร็จ`; soundType = 'negative'; } break;
-                case '3959972186': amount = currentEvent === 'BLOOD_MOON' ? 52500 : 35000; opponentIds.forEach(id => { teams[id].score -= amount; bankScore += amount; }); logText += `ทิ้งระเบิดคะแนน! ทีมอื่นเสีย ${amount.toLocaleString()} แต้ม!`; soundType = 'negative'; break;
-                case '3959976282': const leaderForIRS = getLeader(); const scores = getActiveTeams().map(id => teams[id].score); const isTie = scores.filter(s => s === leaderForIRS.score).length > 1; if (leaderForIRS.id && !isTie) { amount = Math.floor(teams[leaderForIRS.id].score * (currentEvent === 'BLOOD_MOON' ? 0.45 : 0.30)); teams[leaderForIRS.id].score -= amount; bankScore += amount; logText += `สรรพากรลง! ทีมผู้นำ (${teams[leaderForIRS.id].name}) โดนหัก ${amount.toLocaleString()} คะแนน!`; teamId = null; soundType = 'negative'; } else { logText = `สรรพากรมา แต่ไม่มีผู้นำชัดเจน เลยรอดตัวไป!`; teamId = null; } break;
+                
+                // Attack cards
+                case '3971047770': 
+                    amount = currentEvent === 'BLOOD_MOON' ? 30000 : 20000; let totalStolen1 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'มือไว' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'มือไว'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen1 += amount; } }); if (totalStolen1 > 0) { teams[teamId].score += totalStolen1; logText += `ขโมย ${totalStolen1.toLocaleString()} คะแนน!`; } else { logText += `พยายามใช้ 'มือไว' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
+                case '4012933466': 
+                    amount = currentEvent === 'BLOOD_MOON' ? 60000 : 40000; let totalStolen2 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ปล้นสะดม' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ปล้นสะดม'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen2 += amount; } }); if (totalStolen2 > 0) { teams[teamId].score += totalStolen2; logText += `ปล้นครั้งใหญ่! ขโมย ${totalStolen2.toLocaleString()} คะแนน!`; } else { logText += `พยายาม 'ปล้นสะดม' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
+                case '4024389978': 
+                    amount = Math.floor(Math.random() * 10001) + 10000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); let totalStolen3 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ล้วงกระเป๋า' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ล้วงกระเป๋า'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen3 += amount; } }); if (totalStolen3 > 0) { teams[teamId].score += totalStolen3; logText += `สุ่มขโมย ${totalStolen3.toLocaleString()} คะแนน!`; } else { logText += `พยายาม 'ล้วงกระเป๋า' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
+                case '3959963994':
+                    amount = Math.floor(Math.random() * 25001) + 25000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); let totalStolen4 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ทุบกระปุก' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ทุบกระปุก'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen4 += amount; } }); if (totalStolen4 > 0) { teams[teamId].score += totalStolen4; logText += `สุ่มขโมยครั้งใหญ่ ${totalStolen4.toLocaleString()} คะแนน!`; } else { logText += `พยายาม 'ทุบกระปุก' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
+                case '3971051866': 
+                    let totalDrained = 0; opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ดูดพลัง' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ดูดพลัง'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalDrained += amount; } }); if (totalDrained > 0) { teams[teamId].score += totalDrained; logText += `ดูดพลัง ${totalDrained.toLocaleString()} จากทีมอื่น!`; } else { logText += `พยายาม 'ดูดพลัง' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
+                case '4012937562':
+                    logText += `ทำลาย 10% ของคะแนนทีมอื่น!`; opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; bankScore += amount; addLog(id, `สวนกลับ 'ทำลายล้าง' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ทำลายล้าง'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; bankScore += amount; } }); soundType = 'negative'; break;
+                case '4024394074':
+                    logText += `ทำลาย 20% ของคะแนนทีมอื่น!`; opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.30 : 0.20)); if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; bankScore += amount; addLog(id, `สวนกลับ 'ระเบิดพลีชีพ' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ระเบิดพลีชีพ'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; bankScore += amount; } }); soundType = 'negative'; break;
+                case '3959968090': 
+                    const leaderToSwap = getLeader(); if (leaderToSwap.id && leaderToSwap.id !== teamId) { if (teamStatuses[leaderToSwap.id]?.isShielded) { addLog(leaderToSwap.id, `ใช้โล่ป้องกัน 'พลิกชะตา'!`); teamStatuses[leaderToSwap.id].isShielded = false; logText = 'พยายามสลับคะแนน แต่ผู้นำป้องกันไว้ได้!'; } else { [teams[teamId].score, teams[leaderToSwap.id].score] = [teams[leaderToSwap.id].score, teams[teamId].score]; logText = `พลิกชะตา! สลับคะแนนกับทีมผู้นำ (${teams[leaderToSwap.id].name})!`; } soundType = 'negative'; } else { logText = `พยายามสลับคะแนน แต่เป็นผู้นำอยู่แล้วหรือไม่มีผู้นำชัดเจน`; soundType = 'negative'; } break;
+                case '3971055962':
+                    logText = `รีเซ็ตคะแนนทีมอื่นเหลือ 25,000!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { addLog(id, `'ล้างบาง' ถูกสวนกลับ แต่ไม่มีผลกับ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ล้างบาง'!`); teamStatuses[id].isShielded = false; } else { if (teams[id].score > 25000) { bankScore += teams[id].score - 25000; teams[id].score = 25000; } } }); soundType = 'negative'; break;
+                case '4012941658':
+                    const leaderToTax = getLeader(); if (leaderToTax.id && leaderToTax.id !== teamId) { if (teamStatuses[leaderToTax.id]?.isShielded) { addLog(leaderToTax.id, `ใช้โล่ป้องกัน 'ภาษีคนรวย'!`); teamStatuses[leaderToTax.id].isShielded = false; logText = 'พยายามเก็บภาษี แต่ผู้นำป้องกันไว้ได้!'; } else { amount = Math.floor((leaderToTax.score - teams[teamId].score) * (currentEvent === 'BLOOD_MOON' ? 0.225 : 0.15)); teams[teamId].score += amount; teams[leaderToTax.id].score -= amount; logText += `เก็บภาษีคนรวย! ได้รับ ${amount.toLocaleString()} คะแนนจากทีม ${teams[leaderToTax.id].name}!`; } } else { logText = `พยายามเก็บภาษี แต่ไม่สำเร็จ`; soundType = 'negative'; } break;
+                case '3959972186':
+                    amount = currentEvent === 'BLOOD_MOON' ? 52500 : 35000; logText += `ทิ้งระเบิดคะแนน! ทีมอื่นเสีย ${amount.toLocaleString()} แต้ม!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; bankScore += amount; addLog(id, `สวนกลับ 'อุกกาบาต' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'อุกกาบาต'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; bankScore += amount; } }); soundType = 'negative'; break;
+                case '3959976282': 
+                    const leaderForIRS = getLeader(); const scores = getActiveTeams().map(id => teams[id].score); const isTie = scores.filter(s => s === leaderForIRS.score).length > 1; if (leaderForIRS.id && !isTie) { if (teamStatuses[leaderForIRS.id]?.taxEvasion) { logText += `สรรพากรลง! แต่ทีมผู้นำ (${teams[leaderForIRS.id].name}) หลบเลี่ยงภาษีได้สำเร็จ!`; teamStatuses[leaderForIRS.id].taxEvasion = false; teamId = null; } else if (teamStatuses[leaderForIRS.id]?.isShielded) { logText += `สรรพากรลง! แต่ทีมผู้นำ (${teams[leaderForIRS.id].name}) ใช้โล่ป้องกันไว้ได้!`; teamStatuses[leaderForIRS.id].isShielded = false; teamId = null; } else { amount = Math.floor(teams[leaderForIRS.id].score * (currentEvent === 'BLOOD_MOON' ? 0.45 : 0.30)); teams[leaderForIRS.id].score -= amount; bankScore += amount; logText += `สรรพากรลง! ทีมผู้นำ (${teams[leaderForIRS.id].name}) โดนหัก ${amount.toLocaleString()} คะแนน!`; teamId = null; soundType = 'negative'; } } else { logText = `สรรพากรมา แต่ไม่มีผู้นำชัดเจน เลยรอดตัวไป!`; teamId = null; } break;
                 case '4024410458': opponentIds.forEach(id => teams[id].score += 5000); teams[teamId].score -= 10000; bankScore += (10000 - 5000 * opponentIds.length); logText = `มอบของขวัญกวนๆ! ทีมเราเสีย 10,000 แต่ทีมอื่นได้รับ 5,000!`; soundType = 'negative'; break;
+                
                 // Legendary cards
-                case '4127945050': teams[teamId].score += 500000; bankScore -= 500000; logText = `เข้าสู่ยุคทอง! ได้รับ 500,000 คะแนน!`; break;
-                case '4117750106': opponentIds.forEach(id => { const original = teams[id].score; teams[id].score = Math.floor(original / 2); bankScore += original - teams[id].score; }); logText = `เกิดวิกฤตเศรษฐกิจ! คะแนนของทีมอื่นถูกหารสอง!`; soundType = 'negative'; break;
+                case '4127945050': 
+                    let legendaryGain1 = 500000; 
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { legendaryGain1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += legendaryGain1; bankScore -= legendaryGain1; logText = `เข้าสู่ยุคทอง! ได้รับ ${legendaryGain1.toLocaleString()} คะแนน!`; break;
+                case '4117750106':
+                    logText = `เกิดวิกฤตเศรษฐกิจ!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { addLog(id, `'วิกฤตเศรษฐกิจ' ถูกสวนกลับ แต่ไม่มีผลกับ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'วิกฤตเศรษฐกิจ'!`); teamStatuses[id].isShielded = false; } else { const original = teams[id].score; teams[id].score = Math.floor(original / 2); bankScore += original - teams[id].score; } }); soundType = 'negative'; break;
                 case '4127949146':
-                    if (teams[teamId].debt) {
-                        if (opponentIds.length > 0) {
-                            const unluckyOpponentId = opponentIds[Math.floor(Math.random() * opponentIds.length)];
-                            const debtAmount = teams[teamId].debt.amount;
-                            
-                            clearInterval(teams[teamId].debt.interval);
-                            teams[teamId].debt = null;
-                            
-                            if (teams[unluckyOpponentId].debt) {
-                                clearInterval(teams[unluckyOpponentId].debt.interval);
-                            }
-                            
-                            teams[unluckyOpponentId].debt = {
-                                principal: debtAmount,
-                                amount: debtAmount,
-                                interval: setInterval(() => {
-                                    const interest = Math.floor(teams[unluckyOpponentId].debt.principal * 0.20);
-                                    teams[unluckyOpponentId].debt.amount += interest;
-                                    addLog(unluckyOpponentId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teams[unluckyOpponentId].debt.amount.toLocaleString()}`);
-                                    updateTeamUI(unluckyOpponentId);
-                                }, 600000)
-                            };
-                            logText = `ล้างหนี้สำเร็จ! หนี้ทั้งหมดถูกโอนไปให้ทีม ${teams[unluckyOpponentId].name}!`;
-                            soundType = 'negative';
-                        } else {
-                             logText = `พยายามโอนหนี้ แต่ไม่มีทีมอื่น!`;
-                             soundType = 'negative';
-                        }
-                    } else {
-                        logText = `พยายามใช้การ์ดล้างหนี้ แต่ไม่มีหนี้สิน!`;
-                        soundType = 'negative';
-                    }
-                    break;
-                case '4066914650': const leaderToOvertake = getLeader(); if (leaderToOvertake.id && teams[teamId].score < leaderToOvertake.score) { amount = (leaderToOvertake.score + 1) - teams[teamId].score; teams[teamId].score += amount; bankScore -= amount; logText = `ขึ้นเป็นราชา! คะแนนถูกปรับให้แซงผู้นำ!`; } else { logText = `ใช้การ์ดผู้สร้างราชา แต่คะแนนนำอยู่แล้ว!`; soundType = 'negative'; } break;
+                    if (teams[teamId].debt) { if (opponentIds.length > 0) { const unluckyOpponentId = opponentIds[Math.floor(Math.random() * opponentIds.length)]; const debtAmount = teams[teamId].debt.amount; clearInterval(teams[teamId].debt.interval); teams[teamId].debt = null; if (teams[unluckyOpponentId].debt) { clearInterval(teams[unluckyOpponentId].debt.interval); } teams[unluckyOpponentId].debt = { principal: debtAmount, amount: debtAmount, interval: setInterval(() => { const interest = Math.floor(teams[unluckyOpponentId].debt.principal * 0.20); teams[unluckyOpponentId].debt.amount += interest; addLog(unluckyOpponentId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teams[unluckyOpponentId].debt.amount.toLocaleString()}`); updateTeamUI(unluckyOpponentId); }, 600000) }; logText = `ล้างหนี้สำเร็จ! หนี้ทั้งหมดถูกโอนไปให้ทีม ${teams[unluckyOpponentId].name}!`; soundType = 'negative'; } else { logText = `พยายามโอนหนี้ แต่ไม่มีทีมอื่น!`; soundType = 'negative'; } } else { logText = `พยายามใช้การ์ดล้างหนี้ แต่ไม่มีหนี้สิน!`; soundType = 'negative'; } break;
+                case '4066914650': 
+                    const leaderToOvertake = getLeader(); if (leaderToOvertake.id && teams[teamId].score < leaderToOvertake.score) { let gain9 = (leaderToOvertake.score + 1) - teams[teamId].score; if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain9 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += gain9; bankScore -= gain9; logText = `ขึ้นเป็นราชา! คะแนนถูกปรับให้แซงผู้นำ!`; } else { logText = `ใช้การ์ดผู้สร้างราชา แต่คะแนนนำอยู่แล้ว!`; soundType = 'negative'; } break;
                 case '4077150554':
-                    const sortedTeams = getActiveTeams().map(id => ({ id: parseInt(id), score: teams[id].score })).sort((a, b) => a.score - b.score);
-                    if (sortedTeams.length > 1) {
-                        const trailer = sortedTeams[0];
-                        const leader = sortedTeams[sortedTeams.length - 1];
-                        if (trailer.id !== leader.id && teamId === trailer.id) {
-                            amount = Math.floor(teams[leader.id].score * 0.5);
-                            teams[trailer.id].score += amount;
-                            teams[leader.id].score -= amount;
-                            logText = `ปฏิวัติ! ทีม ${teams[trailer.id].name} ขโมย 50% ของคะแนนจากทีม ${teams[leader.id].name}!`;
+                    const sortedTeams = getActiveTeams().map(id => ({ id: parseInt(id), score: teams[id].score })).sort((a, b) => a.score - b.score); if (sortedTeams.length > 1) { const trailer = sortedTeams[0]; const leader = sortedTeams[sortedTeams.length - 1]; if (trailer.id !== leader.id && teamId === trailer.id) { if (teamStatuses[leader.id]?.isShielded) { logText = `ปฏิวัติล้มเหลว! ทีม ${teams[leader.id].name} ป้องกันไว้ได้!`; teamStatuses[leader.id].isShielded = false; } else { amount = Math.floor(teams[leader.id].score * 0.5); teams[trailer.id].score += amount; teams[leader.id].score -= amount; logText = `ปฏิวัติ! ทีม ${teams[trailer.id].name} ขโมย 50% ของคะแนนจากทีม ${teams[leader.id].name}!`; } } else { logText = `พยายามปฏิวัติแต่เงื่อนไขไม่ถูกต้อง! (ต้องเป็นทีมที่คะแนนน้อยที่สุดเท่านั้น)`; soundType = 'negative'; } } else { logText = `พยายามปฏิวัติแต่มีทีมเดียว!`; soundType = 'negative'; } break;
+                case '4117754202':
+                    logText = `เกมศูนย์!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { addLog(id, `'เกมศูนย์' ถูกสวนกลับ แต่ไม่มีผลกับ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'เกมศูนย์'!`); teamStatuses[id].isShielded = false; } else { bankScore += teams[id].score; teams[id].score = 0; } }); soundType = 'negative'; break;
+                case '4127953242':
+                    let legendaryGain2 = 1000000;
+                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { legendaryGain2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
+                    teams[teamId].score += legendaryGain2; bankScore -= legendaryGain2; logText = `สวรรค์เมตตา! ได้รับ ${legendaryGain2.toLocaleString()} คะแนน!`; break;
+                case '0053': teamId = null; logText = `เปิดกล่องแพนโดร่า!`; soundType = 'negative'; setTimeout(() => { const legendaryCards = Object.keys(cardDatabase).filter(k => cardDatabase[k].isLegendary && k !== '0053'); getActiveTeams().forEach((id, index) => { setTimeout(() => { let card = legendaryCards[Math.floor(Math.random() * legendaryCards.length)]; addLog(null, `ทีม ${teams[id].name} ได้รับผลจาก: ${cardDatabase[card].name}!`); performCardAction(id, card); }, (index + 1) * 2000); }); }, 1000); playSound(soundType); addLog(teamId, logText); if (!isDejaVu) { lastCardAction = { teamId, barcode: barcodeResult }; } return;
+                case '4066918746':
+                    logText = `ภาพสะท้อน!`; opponentIds.forEach(id => { if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ภาพสะท้อน'!`); teamStatuses[id].isShielded = false; } else { const diff = teams[teamId].score - teams[id].score; bankScore -= diff; teams[id].score = teams[teamId].score; } }); soundType = 'negative'; break;
+                case '4077154650': getActiveTeams().forEach(id => { const loss = Math.floor(teams[id].score * 0.5); teams[id].score -= loss; bankScore += loss; }); opponentIds.forEach(id => { if(!teamStatuses[id]?.isShielded){ teams[id].score -= 100000; bankScore += 100000; } else { addLog(id, `ใช้โล่ป้องกันความเสียหายเพิ่มเติมจาก 'วันสิ้นโลก'!`); teamStatuses[id].isShielded = false;} }); logText = `วันสิ้นโลก! ทุกทีมเสีย 50% ของคะแนน และทีมอื่นเสียเพิ่มอีก 100,000!`; soundType = 'negative'; break;
+
+                // Simple cards
+                case '3971064154': if (lastCardAction.barcode) { addLog(null, `เดจาวู! การ์ดใบที่แล้วทำงานอีกครั้ง!`); performCardAction(lastCardAction.teamId, lastCardAction.barcode, true); return; } else { logText = `ใช้เดจาวู แต่ไม่มีการ์ดใบก่อนหน้า...`; teamId = null; soundType = 'negative';} break;
+                case '4024406362': if (teams[teamId].score >= 30000) { teams[teamId].score -= 30000; bankScore += 30000; if (Math.random() < 0.5) { let gain10 = 60000; if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain10 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += gain10; bankScore -= gain10; logText = `วัดดวง... และชนะ! ได้รับ ${gain10.toLocaleString()} คะแนน!`; } else { logText = `วัดดวง... และแพ้! เสีย 30,000 คะแนนไปฟรีๆ!`; soundType = 'negative'; } } else { logText = `พยายามวัดดวง แต่คะแนนไม่พอ!`; soundType = 'negative'; } break;
+                case '3971068250': lastCardAction.barcode = 'BLOCKED'; logText = `หลุมดำ! การ์ดใบถัดไปของทีมที่ใช้การ์ดล่าสุดจะไร้ผล!`; soundType = 'negative'; break;
+                // Cards with no score effect but need logging
+                case '4024398170': case '3971060058': case '4012949850': case '3959980378': case '4012953946': logText = `${cardDatabase[barcodeResult].name}!`; soundType = 'negative'; break;
+                case '4066906458': case '4077142362': case '4117746010': case '4066910554': case '4077146458': const reps = Math.floor(Math.random() * 21) + 10; let unit = 'ครั้ง'; if (barcodeResult === '4117746010' || barcodeResult === '4077146458') unit = 'วินาที'; if (barcodeResult === '4066910554') unit = 'รอบ'; logText = `สั่งให้ทีมอื่น ${cardDatabase[barcodeResult].description.replace('ทีมอื่นต้อง', '')} ${reps} ${unit}!`; soundType = 'negative'; break;
+
+                // Secret cards
+                case '1000000001': teamStatuses[teamId].isShielded = true; logText = `เปิดใช้งานโล่ป้องกัน!`; break;
+                case '1000000002': teamStatuses[teamId].hasCounter = true; logText = `ตั้งท่าสวนกลับ!`; break;
+                case '1000000003': teamStatuses[teamId].taxEvasion = true; logText = `เตรียมหลบเลี่ยงภาษี!`; break;
+                case '1000000004': if (teams[teamId].score >= 20000) { teams[teamId].score -= 20000; bankScore += 20000; logText = `ลงทุน 20,000 คะแนน... อีก 5 นาทีมารอลุ้นผลตอบแทน!`; setTimeout(() => { let investmentReturn = 100000; if(teamStatuses[teamId]?.scoreMultiplier > 1){ investmentReturn *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier on Investment!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += investmentReturn; bankScore -= investmentReturn; addLog(teamId, `การลงทุนสำเร็จ! ได้รับเงินปันผล ${investmentReturn.toLocaleString()} คะแนน!`); playSound('positive'); updateTeamUI(teamId); updateBankUI(); }, 300000); } else { logText = `พยายามลงทุน แต่เงินไม่พอ!`; soundType = 'negative'; } break;
+                case '1000000005': let prizeAmount = 300000; if (teamStatuses[teamId]?.scoreMultiplier > 1) { prizeAmount *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += prizeAmount; bankScore -= prizeAmount; logText = `ถูกล็อตโต้! รับแจ็คพอต ${prizeAmount.toLocaleString()} คะแนน!`; break;
+                case '1000000006': teamStatuses[teamId].scoreMultiplier = 2; logText = `เปิดใช้งานตัวคูณคะแนน! การ์ดบวกคะแนนใบถัดไปจะให้ผล x2!`; break;
+                case '1000000007': let heistAmount = Math.floor(bankScore * 0.000001); if (teamStatuses[teamId]?.scoreMultiplier > 1) { heistAmount *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += heistAmount; bankScore -= heistAmount; logText = `ปล้นธนาคารสำเร็จ! ขโมยเงินมาได้ ${heistAmount.toLocaleString()} คะแนน!`; break;
+                case '1000000008':
+                    const sortedTeamsForParachute = getActiveTeams().map(id => ({ id, score: teams[id].score })).sort((a, b) => a.score - b.score);
+                    if (sortedTeamsForParachute[0].id === teamId && sortedTeamsForParachute.length > 1) {
+                        const leaderScore = sortedTeamsForParachute[sortedTeamsForParachute.length - 1].score;
+                        const targetScore = Math.floor(leaderScore / 2);
+                        const scoreGained = targetScore - teams[teamId].score;
+                        if (scoreGained > 0) {
+                            teams[teamId].score += scoreGained;
+                            bankScore -= scoreGained;
+                            logText = `ร่มชูชีพทองคำทำงาน! คะแนนพุ่งไปที่ ${targetScore.toLocaleString()}!`;
                         } else {
-                            logText = `พยายามปฏิวัติแต่เงื่อนไขไม่ถูกต้อง! (ต้องเป็นทีมที่คะแนนน้อยที่สุดเท่านั้น)`;
+                            logText = `ใช้ร่มชูชีพทองคำ แต่คะแนนสูงเกินไป!`;
                             soundType = 'negative';
                         }
                     } else {
-                        logText = `พยายามปฏิวัติแต่มีทีมเดียว!`;
+                        logText = `พยายามใช้ร่มชูชีพทองคำ แต่ไม่ได้อยู่อันดับสุดท้าย!`;
                         soundType = 'negative';
                     }
                     break;
-                case '4117754202': opponentIds.forEach(id => { bankScore += teams[id].score; teams[id].score = 0; }); logText = `เกมศูนย์! คะแนนของทีมอื่นถูกรีเซ็ตเป็น 0!`; soundType = 'negative'; break;
-                case '4127953242': teams[teamId].score += 1000000; bankScore -= 1000000; logText = `สวรรค์เมตตา! ได้รับ 1,000,000 คะแนน!`; break;
-                case '0053': teamId = null; logText = `เปิดกล่องแพนโดร่า!`; soundType = 'negative'; setTimeout(() => { const legendaryCards = Object.keys(cardDatabase).filter(k => cardDatabase[k].isLegendary && k !== '0053'); getActiveTeams().forEach((id, index) => { setTimeout(() => { let card = legendaryCards[Math.floor(Math.random() * legendaryCards.length)]; addLog(null, `ทีม ${teams[id].name} ได้รับผลจาก: ${cardDatabase[card].name}!`); performCardAction(id, card); }, (index + 1) * 2000); }); }, 1000); playSound(soundType); addLog(teamId, logText); if (!isDejaVu) { lastCardAction = { teamId, barcode: barcodeResult }; } return;
-                case '4066918746': opponentIds.forEach(id => { const diff = teams[teamId].score - teams[id].score; bankScore -= diff; teams[id].score = teams[teamId].score; }); logText = `ภาพสะท้อน! คะแนนของทีมอื่นถูกปรับให้เท่ากับทีมเรา!`; soundType = 'negative'; break;
-                case '4077154650': getActiveTeams().forEach(id => { const loss = Math.floor(teams[id].score * 0.5); teams[id].score -= loss; bankScore += loss; }); opponentIds.forEach(id => { teams[id].score -= 100000; bankScore += 100000; }); logText = `วันสิ้นโลก! ทุกทีมเสีย 50% ของคะแนน และทีมอื่นเสียเพิ่มอีก 100,000!`; soundType = 'negative'; break;
+                case '1000000009':
+                    const cosmicGambleAmount = Math.floor(Math.random() * 750001) - 250000;
+                    teams[teamId].score += cosmicGambleAmount;
+                    bankScore -= cosmicGambleAmount;
+                    if (cosmicGambleAmount >= 0) {
+                        logText = `เดิมพันจักรวาล! ได้รับ ${cosmicGambleAmount.toLocaleString()} คะแนน!`;
+                    } else {
+                        logText = `เดิมพันจักรวาล! เสีย ${Math.abs(cosmicGambleAmount).toLocaleString()} คะแนน!`;
+                        soundType = 'negative';
+                    }
+                    break;
+                case '1000000010':
+                    const activeIds = getActiveTeams();
+                    const currentScores = activeIds.map(id => teams[id].score);
+                    // Fisher-Yates shuffle
+                    for (let i = currentScores.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [currentScores[i], currentScores[j]] = [currentScores[j], currentScores[i]];
+                    }
+                    activeIds.forEach((id, index) => {
+                        teams[id].score = currentScores[index];
+                    });
+                    logText = `คะแนนวิปลาส! คะแนนของทุกทีมถูกสลับกันมั่ว!`;
+                    teamId = null; // System event
+                    soundType = 'negative';
+                    break;
+                case '1000000011': const leaderForRansom = getLeader(); if (leaderForRansom.id && teamId !== leaderForRansom.id) { logText = `ใช้การ์ดค่าไถ่ แต่ไม่ได้เป็นราชา!`; soundType = 'negative'; break; } const followers = getActiveTeams().filter(id => teams[id].score < teams[teamId].score); if (followers.length > 0) { const ransomPerTeam = 50000; const totalRansom = ransomPerTeam * followers.length; if (teams[teamId].score >= totalRansom) { teams[teamId].score -= totalRansom; followers.forEach(id => { teams[id].score += ransomPerTeam; }); logText = `เป็นราชาต้องจ่าย! จ่ายค่าไถ่ ${totalRansom.toLocaleString()} คะแนนให้ทีมอื่น!`; soundType = 'negative'; } else { logText = `พยายามจ่ายค่าไถ่ แต่คะแนนไม่พอ!`; soundType = 'negative'; } } else { logText = `เป็นราชาคนเดียว ไม่มีใครให้จ่ายค่าไถ่!`; } break;
 
-                // Simple cards that were missed in refactor
-                case '3971064154': if (lastCardAction.barcode) { addLog(null, `เดจาวู! การ์ดใบที่แล้วทำงานอีกครั้ง!`); performCardAction(lastCardAction.teamId, lastCardAction.barcode, true); return; } else { logText = `ใช้เดจาวู แต่ไม่มีการ์ดใบก่อนหน้า...`; teamId = null; soundType = 'negative';} break;
-                case '4024406362': if (teams[teamId].score >= 30000) { teams[teamId].score -= 30000; bankScore += 30000; if (Math.random() < 0.5) { teams[teamId].score += 60000; bankScore -= 60000; logText = `วัดดวง... และชนะ! ได้รับ 60,000 คะแนน!`; } else { logText = `วัดดวง... และแพ้! เสีย 30,000 คะแนนไปฟรีๆ!`; soundType = 'negative'; } } else { logText = `พยายามวัดดวง แต่คะแนนไม่พอ!`; soundType = 'negative'; } break;
-                // Cards with no score effect
-                case '4024398170': case '3971060058': case '4012949850': case '3959980378': case '3971068250': case '4012953946': 
-                    logText = `${cardDatabase[barcodeResult].name}!`; soundType = 'negative'; break;
-                case '4066906458': case '4077142362': case '4117746010': case '4066910554': case '4077146458':
-                    const reps = Math.floor(Math.random() * 21) + 10;
-                    let unit = 'ครั้ง';
-                    if (barcodeResult === '4117746010' || barcodeResult === '4077146458') unit = 'วินาที';
-                    if (barcodeResult === '4066910554') unit = 'รอบ';
-                    logText = `สั่งให้ทีมอื่น ${cardDatabase[barcodeResult].description.replace('ทีมอื่นต้อง', '')} ${reps} ${unit}!`;
-                    soundType = 'negative'; break;
                 default: logText = `สแกนการ์ด "${barcodeResult}" แต่ไม่รู้จัก`; soundType = 'negative'; break;
             }
             
@@ -720,6 +806,13 @@
                 initAudio();
                 const rfidValue = event.target.value;
                 if (rfidValue) {
+                    if (lastCardAction.barcode === 'BLOCKED' && lastCardAction.teamId === teamId) {
+                        addLog(teamId, "การ์ดถูกบล็อคโดยหลุมดำ!");
+                        playSound('negative');
+                        lastCardAction.barcode = null; // Reset block
+                        event.target.value = '';
+                        return;
+                    }
                     playSound('scan');
                     activeTeam = teamId;
                     showCardInfo(rfidValue);
@@ -778,7 +871,6 @@
         function getGamblePrize() {
             const rand = Math.random();
             if (rand < 0.4) { return Math.floor(Math.random() * 9001); } 
-            // CORRECTED: The ranges contained barcode strings. Now they are correct numerical ranges.
             else if (rand < 0.7) { return Math.floor(Math.random() * (300000 - 9001 + 1)) + 9001; }
             else if (rand < 0.9) { return Math.floor(Math.random() * (700000 - 300001 + 1)) + 300001; }
             else { return Math.floor(Math.random() * (1000000 - 700001 + 1)) + 700001; }
@@ -811,7 +903,12 @@
 
             setTimeout(() => {
                 clearInterval(reelInterval);
-                const prize = getGamblePrize();
+                let prize = getGamblePrize();
+                if (teamStatuses[teamId]?.scoreMultiplier > 1) {
+                    prize *= teamStatuses[teamId].scoreMultiplier;
+                    addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier on Gamble!`);
+                    teamStatuses[teamId].scoreMultiplier = 1;
+                }
                 teamData.score += prize;
                 bankScore -= prize;
                 
@@ -915,6 +1012,7 @@
                 });
                 bankScore = 1000000000000;
                 feedEvents.length = 0;
+                initializeTeamStatuses();
                 updateAllTeamUIs();
                 updateBankUI();
                 renderBattleLog();
@@ -1019,7 +1117,8 @@
                 span.style.animationDelay = `${i * 0.1}s`;
                 titleContainer.appendChild(span);
             });
-
+            
+            initializeTeamStatuses();
             updateAllTeamUIs();
             updateBankUI();
             renderBattleLog();
@@ -1030,3 +1129,4 @@
     </script>
 </body>
 </html>
+
