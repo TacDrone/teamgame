@@ -1,1132 +1,1226 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Scoreboard Dashboard</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Google Fonts: Press Start 2P & Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
-            color: #e0e0e0;
-        }
-        .font-pixel {
-            font-family: 'Press Start 2P', cursive;
-        }
-        .panel {
-            background: rgba(26, 26, 26, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .scan-button {
-            transition: all 0.3s ease;
-        }
-        .scan-button:hover {
-            transform: translateY(-3px) scale(1.05);
-        }
-        .modal-overlay {
-            transition: opacity 0.3s ease;
-        }
-        .modal-content {
-            transition: transform 0.3s ease;
-        }
-        .team-input {
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            text-align: center;
-            font-size: 1.5rem; /* Adjusted font size */
-            line-height: 2rem;
-            font-weight: 700;
-            width: 100%;
-            padding-bottom: 0.5rem;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-        .team-input:focus {
-            border-bottom-color: #fff;
-        }
-        .color-picker {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 40px;
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-        }
-        .color-picker::-webkit-color-swatch {
-            border-radius: 50%;
-            border: 2px solid #fff;
-        }
-        .color-picker::-moz-color-swatch {
-            border-radius: 50%;
-            border: 2px solid #fff;
-        }
-        .manual-score-input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            text-align: center;
-            width: 100%;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            -moz-appearance: textfield; /* Firefox */
-        }
-        .manual-score-input::placeholder { color: rgba(255, 255, 255, 0.4); }
-        .manual-score-input:focus { border-color: #fff; }
-        .manual-score-input::-webkit-outer-spin-button,
-        .manual-score-input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
-        
-        #gamble-reel {
-            text-shadow: 0 0 10px #facc15, 0 0 20px #facc15;
-        }
-        
-        @keyframes switch-color {
-          0%, 49.9% {
-            color: #ffffff;
-            text-shadow: 0 0 5px rgba(255,255,255,0.5);
-          }
-          50%, 99.9% {
-            color: var(--team-color, #ffffff);
-            text-shadow: 0 0 20px var(--team-color, #ffffff);
-          }
-          100% {
-            color: #ffffff;
-            text-shadow: 0 0 5px rgba(255,255,255,0.5);
-          }
-        }
-        .score-blinking {
-          animation: switch-color 2s infinite steps(1, end);
-        }
-        
-        @keyframes event-fade-in {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .event-banner {
-            animation: event-fade-in 0.5s ease-out forwards;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เกมคำนวณอุณหภูมิผสม (mcΔT = mcΔT) - 16:9 Display</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Kanit -->
 
-        @keyframes wave {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .title-char {
-            display: inline-block;
-            animation: wave 2s infinite ease-in-out;
-        }
-    </style>
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Fixed 16:9 Aspect Ratio Frame Container */
+    .aspect-16-9-box {
+      width: 100%;
+      max-width: 1400px;
+      aspect-ratio: 16 / 9;
+      max-height: 94vh;
+    }
+    @media (max-aspect-ratio: 16/9) {
+      .aspect-16-9-box {
+        width: 100%;
+        height: auto;
+      }
+    }
+    /* Custom Neon Glow effects */
+    .glow-cyan {
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+    }
+    .glow-amber {
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.5);
+    }
+    .glow-rose {
+      box-shadow: 0 0 30px rgba(244, 63, 94, 0.4);
+    }
+    /* Modal Backdrop Blur */
+    .backdrop-blur-custom {
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+  </style>
 </head>
-<body class="p-2 sm:p-4">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4 selection:bg-cyan-500 selection:text-slate-950 overflow-hidden">
 
-    <div class="max-w-7xl mx-auto">
-        <header class="text-center mb-2">
-            <h1 id="main-title" class="font-pixel text-2xl sm:text-3xl text-yellow-400 tracking-widest" style="text-shadow: 0 0 10px #facc15;">
-                <!-- Title will be generated by JS -->
-            </h1>
-            <p class="text-gray-300 mt-1 text-xs sm:text-sm">สงครามไร้การป้องกัน</p>
-        </header>
+  <!-- Background Ambient Lights -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-cyan-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 -right-40 w-[32rem] h-[32rem] bg-rose-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 left-1/3 w-[32rem] h-[32rem] bg-indigo-600/20 rounded-full blur-3xl"></div>
+  </div>
 
-        <!-- Team Selection -->
-        <div class="flex justify-center items-center gap-4 mb-4">
-            <span class="font-bold text-gray-300">จำนวนทีม:</span>
-            <button id="set-2-teams-btn" class="panel px-4 py-2 bg-blue-600 rounded-lg transition border-2 border-blue-400">2 ทีม</button>
-            <button id="set-3-teams-btn" class="panel px-4 py-2 bg-gray-700 rounded-lg transition border-2 border-transparent hover:border-blue-400">3 ทีม</button>
+  <!-- 16:9 Main Presentation Wrapper -->
+  <div class="aspect-16-9-box relative z-10 flex flex-col justify-between bg-slate-900/95 border-2 border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl">
+
+    <!-- Header Section (Enlarged) -->
+    <header class="w-full border-b-2 border-slate-800 bg-slate-950/70 px-6 py-3 flex items-center justify-between shrink-0">
+      <div class="flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/40 text-2xl">
+          <i class="fa-solid fa-flask-vial"></i>
+        </div>
+        <div>
+          <h1 class="font-black text-xl sm:text-2xl md:text-3xl text-white tracking-wide flex items-center gap-3">
+            Thermal Equilibrium <span class="text-cyan-300 font-mono text-base sm:text-lg bg-cyan-950/90 border border-cyan-500/50 px-3 py-1 rounded-xl">mcΔT = mcΔT</span>
+          </h1>
+          <p class="text-sm sm:text-base text-slate-300 font-medium">คำนวณสมดุลความร้อน ตัวเลขง่ายๆ 40 ข้อ (3 ตัวเลือก | เวลา 2 นาที)</p>
+        </div>
+      </div>
+      
+      <!-- Controls -->
+      <div class="flex items-center gap-3">
+        <button id="soundToggleBtn" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-600 text-lg flex items-center gap-2 font-semibold">
+          <i id="soundIcon" class="fa-solid fa-volume-high text-cyan-400"></i> <span class="hidden sm:inline text-sm">เสียง</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Workspace -->
+    <main class="flex-1 flex flex-col justify-center p-4 sm:p-6 md:p-8 overflow-hidden relative">
+
+      <!-- Screen 1: Start Screen (16:9 Big Typography) -->
+      <section id="startScreen" class="h-full flex flex-col justify-between text-center py-2">
+        <div>
+          <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 text-base sm:text-lg font-semibold mb-3">
+            <i class="fa-solid fa-bolt text-yellow-400"></i> โหมดฉายหน้าห้องเรียน / Smart Board สัดส่วน 16:9
+          </div>
+          <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-teal-200 to-indigo-300 mb-3 tracking-wide">
+            สมรภูมิอุณหภูมิผสม
+          </h2>
+          <p class="text-slate-300 max-w-3xl mx-auto text-base sm:text-xl font-normal leading-relaxed">
+            กฎอนุรักษ์พลังงานความร้อน <span class="text-amber-300 font-bold font-mono text-xl sm:text-2xl">Q_ลด = Q_เพิ่ม</span> คิดเลขในใจง่ายๆ แข่งกับเวลา 2 นาที!
+          </p>
         </div>
 
-        <!-- Top Controls Section -->
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-2 mb-4">
-            <div class="flex gap-2">
-                <button id="summary-button" class="panel p-3 h-full bg-purple-600 hover:bg-purple-700 rounded-lg transition flex-shrink-0">
-                    <div class="flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-trophy text-lg"></i>
-                        <span class="font-bold text-sm">สรุป</span>
-                    </div>
-                </button>
-                <button id="reset-game-button" class="panel p-3 h-full bg-red-800 hover:bg-red-700 rounded-lg transition flex-shrink-0">
-                    <div class="flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-power-off text-lg"></i>
-                        <span class="font-bold text-sm">รีเซ็ต</span>
-                    </div>
-                </button>
+        <!-- Rules Cards (Large readable cards) -->
+        <div class="grid grid-cols-3 gap-4 sm:gap-6 my-auto text-left max-w-5xl mx-auto w-full">
+          <div class="bg-slate-800/80 border-2 border-slate-700 p-5 rounded-2xl shadow-lg">
+            <div class="text-emerald-400 text-xl sm:text-2xl font-bold mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-circle-check"></i> คะแนนคำตอบ
             </div>
-             <!-- Bank Section -->
-            <div class="panel p-2 text-center">
-                <h3 class="text-xs font-bold text-green-400">💰 ยอดเงินธนาคาร 💰</h3>
-                <p id="bank-score" class="font-pixel text-base text-green-300">1,000,000,000,000</p>
+            <p class="text-sm sm:text-base text-slate-300 space-y-1.5 leading-relaxed">
+              • ตัวเลือก: <b class="text-cyan-300">3 ตัวเลือก (ก, ข, ค)</b><br>
+              • ตอบถูก: <span class="text-emerald-400 font-bold text-lg sm:text-xl">+5 คะแนน</span><br>
+              • ตอบผิด: <span class="text-rose-400 font-bold text-lg sm:text-xl">-10 คะแนน</span><br>
+              • จำนวนโจทย์: <b class="text-white">40 ข้อ</b>
+            </p>
+          </div>
+
+          <div class="bg-slate-800/80 border-2 border-slate-700 p-5 rounded-2xl shadow-lg">
+            <div class="text-amber-400 text-xl sm:text-2xl font-bold mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-dharmachakra"></i> วงล้อเสี่ยงโชค
             </div>
-            <div class="panel p-2 flex gap-2">
-                 <button id="troll-robinhood" class="px-3 py-2 bg-green-600/50 hover:bg-green-600/80 rounded-md transition" title="โรบินฮู้ด"><i class="fa-solid fa-user-secret"></i></button>
-                 <button id="troll-blind-bet" class="px-3 py-2 bg-yellow-600/50 hover:bg-yellow-600/80 rounded-md transition" title="เดิมพันตาบอด"><i class="fa-solid fa-eye-slash"></i></button>
-                 <button id="troll-random" class="px-3 py-2 bg-red-600/50 hover:bg-red-600/80 rounded-md transition" title="โชคชะตา"><i class="fa-solid fa-shuffle"></i></button>
+            <p class="text-sm sm:text-base text-slate-300 space-y-1.5 leading-relaxed">
+              • ตอบถูกครบทุก <strong class="text-white text-lg">2 ข้อ</strong> สุ่มวงล้อ<br>
+              • <span class="text-emerald-400 font-bold">20%</span> ได้คะแนนบวกเพิ่ม<br>
+              • <span class="text-rose-400 font-bold">60%</span> ติดลบ! | <span class="text-cyan-400 font-bold">20%</span> กลางๆ
+            </p>
+          </div>
+
+          <div class="bg-slate-800/80 border-2 border-slate-700 p-5 rounded-2xl shadow-lg">
+            <div class="text-cyan-400 text-xl sm:text-2xl font-bold mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved"></i> ปุ่มยอมข้าม
             </div>
+            <p class="text-sm sm:text-base text-slate-300 space-y-1.5 leading-relaxed">
+              หากไม่อยากเสี่ยงโอกาส 60% ที่จะติดลบ<br>
+              สามารถกด <span class="text-amber-300 font-bold">"ข้ามไม่สุ่ม"</span><br>
+              โดยยอมเสียเพียง <span class="text-rose-400 font-bold text-lg sm:text-xl">5 คะแนน</span>!
+            </p>
+          </div>
         </div>
 
+        <!-- Action Button -->
+        <div class="pb-2">
+          <button id="startGameBtn" class="px-10 py-5 bg-gradient-to-r from-cyan-400 hover:from-cyan-300 to-blue-500 hover:to-blue-400 text-slate-950 font-black text-xl sm:text-2xl rounded-2xl shadow-xl shadow-cyan-500/30 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center gap-3 mx-auto">
+            <i class="fa-solid fa-play"></i> เริ่มเล่นเกมทันที (จับเวลา 2 นาที)
+          </button>
+        </div>
+      </section>
 
-        <!-- Special Event Banner -->
-        <div id="event-banner-container" class="min-h-[50px] mb-4"></div>
+      <!-- Screen 2: Game Screen (16:9 Layout) -->
+      <section id="gameScreen" class="hidden h-full flex flex-col justify-between gap-3">
+        
+        <!-- Top HUD Stats (Larger font & high contrast) -->
+        <div class="grid grid-cols-4 gap-4 bg-slate-950/80 border-2 border-slate-800 rounded-2xl p-3 sm:p-4 shrink-0">
+          <!-- Timer -->
+          <div class="flex items-center gap-3 sm:gap-4 pl-2">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-2xl">
+              <i class="fa-solid fa-stopwatch"></i>
+            </div>
+            <div>
+              <div class="text-xs sm:text-sm text-slate-400 font-semibold uppercase tracking-wider">เวลาที่เหลือ</div>
+              <div id="timerDisplay" class="font-mono text-2xl sm:text-3xl md:text-4xl font-extrabold text-amber-300">02:00</div>
+            </div>
+          </div>
 
-        <div id="teams-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-6">
-            <!-- Team 1 Panel -->
-            <div id="team1-panel" class="panel p-4 flex flex-col items-center space-y-2" style="border-color: #38bdf8;">
-                <div class="w-full flex justify-center items-center gap-2">
-                    <input type="text" id="team1-name" value="Blue Team" class="team-input" style="color: #38bdf8;">
-                    <span id="team1-leader-indicator" class="text-yellow-400 text-2xl"></span>
-                    <input type="color" id="team1-color" value="#38bdf8" class="color-picker">
-                </div>
-                <p class="font-pixel text-3xl sm:text-4xl font-bold text-white break-all" id="team1-score">100,000</p>
-                <p class="text-gray-400 text-sm">POINTS</p>
-                <div id="team1-debt-display" class="text-red-500 font-bold text-sm min-h-[20px]"></div>
-                <div class="w-full max-w-xs pt-2 space-y-2">
-                    <input type="number" id="team1-manual-score" class="manual-score-input" placeholder="Add/Sub Score & Enter">
-                    <div class="flex gap-2">
-                         <input type="number" id="team1-buy-amount" class="manual-score-input w-1/3" placeholder="Qty">
-                         <button class="w-2/3 py-2 text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 transition text-white" onclick="handleBuyCards(1)">
-                             <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
-                         </button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button class="w-full py-2 text-sm font-bold rounded-lg bg-yellow-500 hover:bg-yellow-600 transition text-gray-900" onclick="handleGamble(1)">
-                            <i class="fa-solid fa-dice"></i> เดิมพัน
-                        </button>
-                        <div id="team1-loan-container">
-                            <button class="w-full py-2 text-sm font-bold rounded-lg bg-green-500 hover:bg-green-600 transition text-gray-900" onclick="handleLoan(1)">
-                                <i class="fa-solid fa-hand-holding-dollar"></i> กู้ยืม
-                            </button>
-                        </div>
-                    </div>
-                     <button class="w-full py-2 text-sm font-bold rounded-lg bg-gray-800 hover:bg-gray-700 border border-yellow-500 transition text-yellow-400" onclick="handleBlackMarket(1)">
-                        <i class="fa-solid fa-store"></i> ตลาดมืด (250k)
-                    </button>
-                </div>
-                <div class="w-full mt-auto pt-4">
-                    <input type="text" id="team1-rfid-input" class="manual-score-input font-pixel text-lg py-3" placeholder="แตะการ์ด RFID ที่นี่">
-                </div>
+          <!-- Score -->
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-2xl">
+              <i class="fa-solid fa-trophy"></i>
             </div>
+            <div>
+              <div class="text-xs sm:text-sm text-slate-400 font-semibold uppercase tracking-wider">คะแนนสะสม</div>
+              <div id="scoreDisplay" class="font-mono text-2xl sm:text-3xl md:text-4xl font-extrabold text-cyan-300">0</div>
+            </div>
+          </div>
 
-            <!-- Team 2 Panel -->
-            <div id="team2-panel" class="panel p-4 flex flex-col items-center space-y-2" style="border-color: #ec4899;">
-                <div class="w-full flex justify-center items-center gap-2">
-                    <input type="text" id="team2-name" value="Pink Team" class="team-input" style="color: #ec4899;">
-                    <span id="team2-leader-indicator" class="text-yellow-400 text-2xl"></span>
-                    <input type="color" id="team2-color" value="#ec4899" class="color-picker">
-                </div>
-                <p class="font-pixel text-3xl sm:text-4xl font-bold text-white break-all" id="team2-score">100,000</p>
-                <p class="text-gray-400 text-sm">POINTS</p>
-                 <div id="team2-debt-display" class="text-red-500 font-bold text-sm min-h-[20px]"></div>
-                <div class="w-full max-w-xs pt-2 space-y-2">
-                    <input type="number" id="team2-manual-score" class="manual-score-input" placeholder="Add/Sub Score & Enter">
-                    <div class="flex gap-2">
-                         <input type="number" id="team2-buy-amount" class="manual-score-input w-1/3" placeholder="Qty">
-                         <button class="w-2/3 py-2 text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 transition text-white" onclick="handleBuyCards(2)">
-                             <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
-                         </button>
-                    </div>
-                     <div class="grid grid-cols-2 gap-2">
-                        <button class="w-full py-2 text-sm font-bold rounded-lg bg-yellow-500 hover:bg-yellow-600 transition text-gray-900" onclick="handleGamble(2)">
-                            <i class="fa-solid fa-dice"></i> เดิมพัน
-                        </button>
-                        <div id="team2-loan-container">
-                             <button class="w-full py-2 text-sm font-bold rounded-lg bg-green-500 hover:bg-green-600 transition text-gray-900" onclick="handleLoan(2)">
-                                <i class="fa-solid fa-hand-holding-dollar"></i> กู้ยืม
-                            </button>
-                        </div>
-                    </div>
-                     <button class="w-full py-2 text-sm font-bold rounded-lg bg-gray-800 hover:bg-gray-700 border border-yellow-500 transition text-yellow-400" onclick="handleBlackMarket(2)">
-                        <i class="fa-solid fa-store"></i> ตลาดมืด (250k)
-                    </button>
-                </div>
-                <div class="w-full mt-auto pt-4">
-                    <input type="text" id="team2-rfid-input" class="manual-score-input font-pixel text-lg py-3" placeholder="แตะการ์ด RFID ที่นี่">
-                </div>
+          <!-- Question Counter -->
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 text-2xl">
+              <i class="fa-solid fa-list-ol"></i>
             </div>
-            
-            <!-- Team 3 Panel -->
-            <div id="team3-panel" class="panel p-4 flex flex-col items-center space-y-2 hidden" style="border-color: #22c55e;">
-                <div class="w-full flex justify-center items-center gap-2">
-                    <input type="text" id="team3-name" value="Green Team" class="team-input" style="color: #22c55e;">
-                    <span id="team3-leader-indicator" class="text-yellow-400 text-2xl"></span>
-                    <input type="color" id="team3-color" value="#22c55e" class="color-picker">
-                </div>
-                <p class="font-pixel text-3xl sm:text-4xl font-bold text-white break-all" id="team3-score">100,000</p>
-                <p class="text-gray-400 text-sm">POINTS</p>
-                <div id="team3-debt-display" class="text-red-500 font-bold text-sm min-h-[20px]"></div>
-                <div class="w-full max-w-xs pt-2 space-y-2">
-                    <input type="number" id="team3-manual-score" class="manual-score-input" placeholder="Add/Sub Score & Enter">
-                    <div class="flex gap-2">
-                        <input type="number" id="team3-buy-amount" class="manual-score-input w-1/3" placeholder="Qty">
-                        <button class="w-2/3 py-2 text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 transition text-white" onclick="handleBuyCards(3)">
-                            <i class="fa-solid fa-cart-shopping"></i> ซื้อการ์ด (50k)
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button class="w-full py-2 text-sm font-bold rounded-lg bg-yellow-500 hover:bg-yellow-600 transition text-gray-900" onclick="handleGamble(3)">
-                            <i class="fa-solid fa-dice"></i> เดิมพัน
-                        </button>
-                        <div id="team3-loan-container">
-                            <button class="w-full py-2 text-sm font-bold rounded-lg bg-green-500 hover:bg-green-600 transition text-gray-900" onclick="handleLoan(3)">
-                                <i class="fa-solid fa-hand-holding-dollar"></i> กู้ยืม
-                            </button>
-                        </div>
-                    </div>
-                    <button class="w-full py-2 text-sm font-bold rounded-lg bg-gray-800 hover:bg-gray-700 border border-yellow-500 transition text-yellow-400" onclick="handleBlackMarket(3)">
-                        <i class="fa-solid fa-store"></i> ตลาดมืด (250k)
-                    </button>
-                </div>
-                <div class="w-full mt-auto pt-4">
-                    <input type="text" id="team3-rfid-input" class="manual-score-input font-pixel text-lg py-3" placeholder="แตะการ์ด RFID ที่นี่">
-                </div>
+            <div>
+              <div class="text-xs sm:text-sm text-slate-400 font-semibold uppercase tracking-wider">ข้อคำถาม</div>
+              <div class="font-mono text-2xl sm:text-3xl md:text-4xl font-extrabold text-indigo-300"><span id="currentQNum">1</span><span class="text-slate-500 text-lg">/40</span></div>
             </div>
+          </div>
+
+          <!-- Wheel Meter -->
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-2xl">
+              <i class="fa-solid fa-dharmachakra"></i>
+            </div>
+            <div>
+              <div class="text-xs sm:text-sm text-slate-400 font-semibold uppercase tracking-wider">สะสมปลดล็อกวงล้อ</div>
+              <div class="flex items-center gap-2 mt-1">
+                <span id="streakDot1" class="w-5 h-5 rounded-full border-2 border-slate-600 bg-slate-800 transition-colors"></span>
+                <span id="streakDot2" class="w-5 h-5 rounded-full border-2 border-slate-600 bg-slate-800 transition-colors"></span>
+                <span class="text-xs sm:text-sm text-slate-400 font-bold ml-1 font-mono">(ถูก 2 ข้อ)</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="mt-8">
-            <div class="panel p-6">
-                <h3 class="font-pixel text-xl mb-4 text-center text-yellow-400">BATTLE LOG</h3>
-                <ul id="chaos-feed" class="space-y-4 h-[250px] overflow-y-auto custom-scrollbar pr-2"></ul>
-            </div>
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700/60 shrink-0">
+          <div id="timeProgressBar" class="bg-gradient-to-r from-cyan-400 via-indigo-500 to-rose-500 h-full w-full transition-all duration-1000 ease-linear"></div>
         </div>
+
+        <!-- Main Question Container (Large Text) -->
+        <div class="flex-1 bg-slate-950/70 border-2 border-slate-800 rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xl">
+          <!-- Tag & Formula Header -->
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0">
+            <div class="flex items-center gap-3">
+              <span class="bg-indigo-500/20 text-indigo-300 text-sm sm:text-base font-bold px-3 py-1 rounded-xl border border-indigo-500/40">
+                <i class="fa-solid fa-flask text-indigo-400 mr-1.5"></i> สมดุลความร้อน: ผสมของเหลว (mcΔT = mcΔT)
+              </span>
+              <span class="bg-cyan-950 text-cyan-300 text-xs sm:text-sm px-3 py-1 rounded-xl border border-cyan-800 font-medium">
+                เลขคิดในใจ
+              </span>
+            </div>
+            <div class="text-sm sm:text-lg text-amber-300 font-mono font-bold">
+              Q_สูญเสีย = Q_ได้รับ
+            </div>
+          </div>
+
+          <!-- Question Text (Enlarged) -->
+          <div class="my-auto py-2">
+            <h3 id="questionText" class="text-xl sm:text-2xl md:text-3xl font-semibold text-slate-50 leading-relaxed">
+              กำลังโหลดโจทย์...
+            </h3>
+          </div>
+
+          <!-- 3 Choices Grid (3 Columns Layout for 16:9 Screen) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0" id="choicesContainer">
+            <!-- Dynamically populated 3 buttons -->
+          </div>
+
+          <!-- Feedback Bar -->
+          <div id="answerFeedback" class="hidden mt-3 p-3.5 rounded-2xl text-base sm:text-lg font-bold flex items-center justify-between shrink-0">
+            <div id="feedbackText" class="flex items-center gap-2"></div>
+            <div id="feedbackExplanation" class="text-sm sm:text-base opacity-95 font-mono font-normal"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 3: Game Over Screen (16:9 Finished State) -->
+      <section id="gameOverScreen" class="hidden h-full flex flex-col justify-center items-center text-center p-4">
+        <div class="w-20 h-20 rounded-3xl bg-amber-500/20 text-amber-400 border-2 border-amber-500/40 flex items-center justify-center text-4xl mb-3 shadow-lg shadow-amber-500/20">
+          <i class="fa-solid fa-flag-checkered"></i>
+        </div>
+        <h2 class="text-3xl sm:text-5xl font-black text-white mb-2">จบการทดสอบอุณหภูมิผสม!</h2>
+        <p id="gameOverReason" class="text-base sm:text-xl text-slate-300 mb-6 font-medium">หมดเวลา 2 นาที (120 วินาที)</p>
+
+        <!-- Large Result Dashboard -->
+        <div class="w-full max-w-2xl bg-slate-800/80 border-2 border-slate-700 rounded-3xl p-6 mb-6 shadow-2xl">
+          <div class="text-sm sm:text-base uppercase tracking-widest text-slate-400 font-bold mb-1">คะแนนรวมสุทธิ</div>
+          <div id="finalScoreDisplay" class="font-mono text-6xl sm:text-7xl font-black text-cyan-300 mb-4">0</div>
+          
+          <div class="grid grid-cols-3 gap-4 border-t-2 border-slate-700/80 pt-4 text-center">
+            <div class="bg-slate-900/60 p-3 rounded-2xl">
+              <div class="text-emerald-400 font-extrabold text-2xl sm:text-3xl font-mono" id="finalCorrectCount">0</div>
+              <div class="text-xs sm:text-sm text-slate-300 font-semibold mt-1">ตอบถูก (+5)</div>
+            </div>
+            <div class="bg-slate-900/60 p-3 rounded-2xl">
+              <div class="text-rose-400 font-extrabold text-2xl sm:text-3xl font-mono" id="finalWrongCount">0</div>
+              <div class="text-xs sm:text-sm text-slate-300 font-semibold mt-1">ตอบผิด (-10)</div>
+            </div>
+            <div class="bg-slate-900/60 p-3 rounded-2xl">
+              <div class="text-amber-400 font-extrabold text-2xl sm:text-3xl font-mono" id="finalSpinCount">0</div>
+              <div class="text-xs sm:text-sm text-slate-300 font-semibold mt-1">หมุนวงล้อสุ่ม</div>
+            </div>
+          </div>
+        </div>
+
+        <button id="restartGameBtn" class="px-10 py-4 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xl sm:text-2xl rounded-2xl shadow-xl shadow-cyan-400/30 transition-all flex items-center justify-center gap-3">
+          <i class="fa-solid fa-rotate-right"></i> เล่นใหม่อีกครั้ง
+        </button>
+      </section>
+
+    </main>
+
+    <!-- Footer inside 16:9 Frame -->
+    <footer class="w-full py-2.5 px-6 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between text-xs sm:text-sm text-slate-400 shrink-0">
+      <div>สมการสมดุลความร้อน: <span class="font-mono text-cyan-300 font-bold">m₁c₁(T₁ - T) = m₂c₂(T - T₂)</span></div>
+      <div class="text-slate-500 font-medium">16:9 Classroom Projector Edition</div>
+    </footer>
+
+  </div>
+
+  <!-- Modal: Lucky Wheel (Scaled up for 16:9 screens) -->
+  <div id="wheelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-custom hidden transition-opacity duration-300 opacity-0">
+    <div class="bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-6 sm:p-8 max-w-xl w-full text-center relative shadow-2xl glow-amber transform scale-95 transition-transform duration-300" id="wheelModalBox">
+      
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/50 text-amber-300 text-sm sm:text-base font-bold mb-2">
+        <i class="fa-solid fa-star text-yellow-300 animate-pulse"></i> ตอบถูกสะสมครบ 2 ข้อ! ปลดล็อกวงล้อเสี่ยงดวง
+      </div>
+      
+      <h3 class="text-2xl sm:text-3xl font-black text-white mb-1">วงล้อคะแนนปริศนา</h3>
+      <p class="text-sm sm:text-base text-slate-300 mb-4">
+        ความน่าจะเป็น: <span class="text-emerald-400 font-bold">20% ได้เพิ่ม</span> | <span class="text-rose-400 font-bold">60% ติดลบ!</span> | <span class="text-cyan-400 font-bold">20% กลางๆ</span>
+      </p>
+
+      <!-- Wheel Canvas Container -->
+      <div class="relative w-72 h-72 mx-auto my-2 flex items-center justify-center">
+        <!-- Pointer Arrow -->
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[28px] border-t-amber-400 drop-shadow-lg"></div>
+        <!-- Canvas (Bigger Canvas 300x300) -->
+        <canvas id="wheelCanvas" width="290" height="290" class="rounded-full shadow-inner"></canvas>
+        <!-- Center Cap -->
+        <div class="absolute w-14 h-14 rounded-full bg-slate-950 border-4 border-amber-400 flex items-center justify-center shadow-xl z-10 pointer-events-none">
+          <i class="fa-solid fa-dice text-amber-400 text-lg"></i>
+        </div>
+      </div>
+
+      <!-- Result Banner -->
+      <div id="wheelResultBanner" class="hidden my-3 p-4 rounded-2xl text-center font-bold text-lg sm:text-xl transition-all"></div>
+
+      <!-- Wheel Controls (Big Buttons) -->
+      <div class="flex flex-col sm:flex-row gap-3 mt-4" id="wheelButtonsGroup">
+        <button id="spinWheelBtn" class="flex-1 py-4 px-6 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-lg sm:text-xl rounded-2xl shadow-xl shadow-amber-500/30 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i> หมุนวงล้อเสี่ยงดวง
+        </button>
+
+        <button id="skipWheelBtn" class="py-4 px-6 bg-slate-800 hover:bg-rose-950/70 border-2 border-slate-700 hover:border-rose-500/70 text-slate-200 hover:text-rose-300 font-bold text-base sm:text-lg rounded-2xl transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-forward-step"></i> ข้ามไม่สุ่ม (ยอมเสีย 5 คะแนน)
+        </button>
+      </div>
+
+      <!-- Continue button after wheel stopped -->
+      <button id="continueAfterWheelBtn" class="hidden w-full py-4 px-6 mt-4 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xl rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-400/20">
+        ทำโจทย์ข้อต่อไป <i class="fa-solid fa-arrow-right"></i>
+      </button>
+
     </div>
+  </div>
 
-    <!-- Modals -->
-    <div id="alert-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
-        <div class="modal-content panel p-8 text-center transform scale-95 flex flex-col items-center max-w-sm">
-            <div id="alert-icon" class="text-5xl mb-4"></div>
-            <h3 id="alert-title" class="font-pixel text-2xl text-white mb-2"></h3>
-            <p id="alert-message" class="text-gray-300 mb-6"></p>
-            <div id="alert-buttons" class="flex gap-4">
-                <button id="close-alert-button" class="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition">OK</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="gamble-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
-        <div class="modal-content panel p-8 text-center transform scale-95 flex flex-col items-center max-w-md w-full">
-            <h3 class="font-pixel text-2xl text-white mb-4">🎲 เดิมพัน 🎲</h3>
-            <div id="gamble-reel" class="font-pixel text-6xl text-yellow-400 my-8">000000</div>
-            <div id="gamble-result" class="hidden">
-                 <p class="text-gray-300 mb-6"></p>
-                 <button id="close-gamble-button" class="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition">ปิด</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="summary-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center opacity-0 pointer-events-none z-50">
-        <div class="modal-content panel p-8 text-center transform scale-95 flex flex-col items-center max-w-lg w-full">
-            <h3 class="font-pixel text-2xl text-white mb-6">🏆 สรุปผล 🏆</h3>
-            <div id="summary-content" class="space-y-4 w-full"></div>
-            <div id="summary-punishment" class="border-t border-gray-700 pt-6 mt-6 w-full"></div>
-            <button id="close-summary-button" class="mt-8 bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition hidden">ปิด</button>
-        </div>
-    </div>
-
-
-    <script>
-        const teams = {
-            1: { name: 'Blue Team', color: '#38bdf8', score: 100000, debt: null },
-            2: { name: 'Pink Team', color: '#ec4899', score: 100000, debt: null }
-        };
-        
-        let numberOfTeams = 2;
-        let bankScore = 1000000000000;
-
-        let activeTeam = null;
-        const feedEvents = [];
-        let lastCardAction = { teamId: null, barcode: null };
-        
-        let audioCtx;
-        let currentEvent = null;
-        let teamStatuses = {};
-
-        const elements = {
-            mainTitle: document.getElementById('main-title'),
-            teamsGrid: document.getElementById('teams-grid'),
-            set2TeamsBtn: document.getElementById('set-2-teams-btn'),
-            set3TeamsBtn: document.getElementById('set-3-teams-btn'),
-            team1: { panel: document.getElementById('team1-panel'), name: document.getElementById('team1-name'), color: document.getElementById('team1-color'), score: document.getElementById('team1-score'), manualScore: document.getElementById('team1-manual-score'), leaderIndicator: document.getElementById('team1-leader-indicator'), debtDisplay: document.getElementById('team1-debt-display'), loanContainer: document.getElementById('team1-loan-container'), buyAmountInput: document.getElementById('team1-buy-amount'), rfidInput: document.getElementById('team1-rfid-input') },
-            team2: { panel: document.getElementById('team2-panel'), name: document.getElementById('team2-name'), color: document.getElementById('team2-color'), score: document.getElementById('team2-score'), manualScore: document.getElementById('team2-manual-score'), leaderIndicator: document.getElementById('team2-leader-indicator'), debtDisplay: document.getElementById('team2-debt-display'), loanContainer: document.getElementById('team2-loan-container'), buyAmountInput: document.getElementById('team2-buy-amount'), rfidInput: document.getElementById('team2-rfid-input') },
-            team3: { panel: document.getElementById('team3-panel'), name: document.getElementById('team3-name'), color: document.getElementById('team3-color'), score: document.getElementById('team3-score'), manualScore: document.getElementById('team3-manual-score'), leaderIndicator: document.getElementById('team3-leader-indicator'), debtDisplay: document.getElementById('team3-debt-display'), loanContainer: document.getElementById('team3-loan-container'), buyAmountInput: document.getElementById('team3-buy-amount'), rfidInput: document.getElementById('team3-rfid-input') },
-            feed: document.getElementById('chaos-feed'),
-            summaryButton: document.getElementById('summary-button'),
-            resetGameButton: document.getElementById('reset-game-button'),
-            trollRobinhoodButton: document.getElementById('troll-robinhood'),
-            trollBlindBetButton: document.getElementById('troll-blind-bet'),
-            trollRandomButton: document.getElementById('troll-random'),
-            alertModal: document.getElementById('alert-modal'),
-            alertIcon: document.getElementById('alert-icon'),
-            alertTitle: document.getElementById('alert-title'),
-            alertMessage: document.getElementById('alert-message'),
-            alertButtons: document.getElementById('alert-buttons'),
-            closeAlertButton: document.getElementById('close-alert-button'),
-            gambleModal: document.getElementById('gamble-modal'),
-            gambleReel: document.getElementById('gamble-reel'),
-            gambleResult: document.getElementById('gamble-result'),
-            closeGambleButton: document.getElementById('close-gamble-button'),
-            eventBannerContainer: document.getElementById('event-banner-container'),
-            summaryModal: document.getElementById('summary-modal'),
-            summaryContent: document.getElementById('summary-content'),
-            summaryPunishment: document.getElementById('summary-punishment'),
-            closeSummaryButton: document.getElementById('close-summary-button'),
-            bankScore: document.getElementById('bank-score'),
-        };
-        
-        const cardDatabase = {
-            '4024369498': { emoji: '💰', name: 'เงินก้นถุง', description: 'ได้รับ 12,000 คะแนน' },
-            '3959943514': { emoji: '💵', name: 'เงินเดือนออก', description: 'ได้รับ 14,000 คะแนน' },
-            '3971035482': { emoji: '🤑', name: 'ถูกหวย', description: 'ได้รับ 20,000 คะแนน' },
-            '4012917082': { emoji: '🏦', name: 'โบนัสใหญ่', description: 'ได้รับ 40,000 คะแนน' },
-            '4024373594': { emoji: '🎲', name: 'สุ่มแต้มบุญ', description: 'สุ่มคะแนน 10,000-20,000' },
-            '3959947610': { emoji: '🎰', name: 'แจ็คพอต', description: 'สุ่มคะแนน 25,000-50,000' },
-            '3971039578': { emoji: '📈', name: 'ดอกเบี้ยทบต้น', description: 'โบนัส 5% จากคะแนนตัวเอง' },
-            '4012921178': { emoji: '🚀', name: 'พุ่งทะยาน', description: 'โบนัส 10% จากคะแนนตัวเอง' },
-            '4024377690': { emoji: '❤️‍🩹', name: 'ชุบชีวิต', description: 'ถ้าคะแนนติดลบ จะกลับมาที่ 15,000' },
-            '3959951706': { emoji: '😂', name: 'เลขสวย', description: 'ได้รับ 15,555 คะแนน' },
-            '3971043674': { emoji: '⚖️', name: 'คะแนนปลอบใจ', description: 'ลดช่องว่างคะแนนกับทีมที่นำอยู่' },
-            '4012925274': { emoji: '🪙', name: 'เงินปันผล', description: 'รับดอกเบี้ย 1% จากคะแนนที่มี' },
-            '4024381786': { emoji: '🍀', name: 'โชคดีสี่แฉก', description: 'ได้รับ 17,777 คะแนน' },
-            '3959955802': { emoji: '💎', name: 'ขุมทรัพย์', description: 'ได้รับโบนัสก้อนโต 50,000 คะแนน' },
-            '4012929370': { emoji: '🤝', name: 'สันติภาพ', description: 'ทุกทีมได้รับ 15,000 คะแนน' },
-            '4024385882': { emoji: '🔄', name: 'ปรับสมดุล', description: 'คะแนนทุกทีมถูกปรับให้เท่ากัน' },
-            '3959959898': { emoji: '🕊️', name: 'สนธิสัญญาสงบศึก', description: 'ล้างสถานะไม่ดีของทุกทีม' },
-            '3971047770': { emoji: '👺', name: 'มือไว', description: 'ขโมย 20,000 คะแนนจากทีมอื่น' },
-            '4012933466': { emoji: '🥷', name: 'ปล้นสะดม', description: 'ปล้นครั้งใหญ่ 40,000 คะแนนจากทีมอื่น' },
-            '4024389978': { emoji: '❓', name: 'ล้วงกระเป๋า', description: 'สุ่มขโมย 10,000-20,000 คะแนนจากทีมอื่น' },
-            '3959963994': { emoji: '‼️', name: 'ทุบกระปุก', description: 'สุ่มขโมย 25,000-50,000 คะแนนจากทีมอื่น' },
-            '3971051866': { emoji: '🧛', name: 'ดูดพลัง', description: 'ดูดพลัง 10% จากคะแนนทีมอื่น' },
-            '4012937562': { emoji: '💥', name: 'ทำลายล้าง', description: 'ทำลาย 10% ของคะแนนทีมอื่น' },
-            '4024394074': { emoji: '💣', name: 'ระเบิดพลีชีพ', description: 'ทำลาย 20% ของคะแนนทีมอื่น' },
-            '3959968090': { emoji: '🎭', name: 'พลิกชะตา', description: 'สลับคะแนนกับทีมที่นำอยู่' },
-            '3971055962': { emoji: '📉', name: 'ล้างบาง', description: 'รีเซ็ตคะแนนทีมอื่นเหลือ 25,000' },
-            '4012941658': { emoji: '🧐', name: 'ภาษีคนรวย', description: 'เก็บภาษีจากทีมที่คะแนนนำอยู่' },
-            '4024398170': { emoji: '💧', name: 'กระเป๋ารั่ว', description: 'ทำให้คะแนนทีมอื่นรั่วไหล 2 นาที' },
-            '3959972186': { emoji: '☄️', name: 'อุกกาบาต', description: 'ทีมอื่นเสีย 35,000 คะแนน' },
-            '3971060058': { emoji: '🦠', name: 'โรคระบาด', description: 'ทีมอื่นเสียคะแนนทันทีและต่อเนื่อง' },
-            '4012945754': { emoji: '✍️', name: 'เด็กฝึกงาน', description: 'สลับเลขท้ายสองตัวของคะแนน' },
-            '4024402266': { emoji: '💸', name: 'ค่าเงินเฟ้อ', description: 'คะแนนทุกทีมถูกหารสอง' },
-            '3959976282': { emoji: '🧾', name: 'สรรพากรลง', description: 'ทีมที่นำอยู่เสีย 30% ของคะแนน' },
-            '3971064154': { emoji: '🔮', name: 'เดจาวู', description: 'ผลของการ์ดใบที่แล้วเกิดซ้ำ' },
-            '4012949850': { emoji: '🏖️', name: 'วันหยุด', description: 'ห้ามใช้การ์ด 1 นาที' },
-            '4024406362': { emoji: '🎲', name: 'วัดดวง', description: 'เดิมพัน 30,000 ลุ้นรับ 60,000' },
-            '3959980378': { emoji: '🎭', name: 'สวมรอย', description: 'ขโมยคะแนนที่ทีมอื่นได้รับ 2 นาที' },
-            '3971068250': { emoji: '⚫', name: 'หลุมดำ', description: 'การ์ดใบถัดไปไร้ผล' },
-            '4012953946': { emoji: '🔒', name: 'ไวรัสเรียกค่าไถ่', description: 'ล็อคการรับแต้มของทีมอื่น' },
-            '4024410458': { emoji: '🎁', name: 'ของขวัญกวนๆ', description: 'เราเสีย 10,000 ทีมอื่นได้ 5,000' },
-            '4066906458': { emoji: '🤸', name: 'ออกกำลัง!', description: 'ทีมอื่นต้องกระโดดตบ' },
-            '4077142362': { emoji: '💪', name: 'เบ่งกล้าม!', description: 'ทีมอื่นต้องดันพื้น' },
-            '4117746010': { emoji: '🧘', name: 'ทรงตัว!', description: 'ทีมอื่นต้องแพลงค์' },
-            '4066910554': { emoji: '😵‍💫', name: 'โลกหมุน!', description: 'ทีมอื่นต้องปั่นจิ้งหรีด' },
-            '4077146458': { emoji: '🕺', name: 'แดนซ์!', description: 'ทีมอื่นต้องออกกำลังกายท่าฟรีสไตล์' },
-            '4127945050': { emoji: '🌟', name: 'ยุคทอง', description: 'ทีมของคุณได้รับ 500,000 คะแนนทันที!', isLegendary: true },
-            '4117750106': { emoji: '📉', name: 'วิกฤตเศรษฐกิจ', description: 'คะแนนของทีมอื่นถูกหาร 2 ทันที!', isLegendary: true },
-            '4127949146': { emoji: '📜', name: 'ล้างหนี้', description: 'หนี้ของคุณจะถูกโอนไปให้ทีมอื่น!', isLegendary: true },
-            '4066914650': { emoji: '👑', name: 'ผู้สร้างราชา', description: 'คะแนนของคุณจะเท่ากับทีมที่นำอยู่ +1 คะแนน!', isLegendary: true },
-            '4077150554': { emoji: '✊', name: 'ปฏิวัติ', description: 'ทีมที่คะแนนน้อยกว่าขโมย 50% ของคะแนนจากทีมที่นำ!', isLegendary: true },
-            '4117754202': { emoji: '💥', name: 'เกมศูนย์', description: 'รีเซ็ตคะแนนของทีมอื่นให้เหลือ 0!', isLegendary: true },
-            '4127953242': { emoji: '🙏', name: 'สวรรค์เมตตา', description: 'ได้รับ 1,000,000 คะแนน!', isLegendary: true },
-            '0053': { emoji: ' Pandora\'s Box', name: 'กล่องแพนโดร่า', description: 'สุ่มการ์ดในตำนานใส่ทุกทีม!', isLegendary: true },
-            '4066918746': { emoji: '👯', name: 'ภาพสะท้อน', description: 'คะแนนของทีมอื่นจะถูกปรับให้เท่ากับทีมเรา!', isLegendary: true },
-            '4077154650': { emoji: '☄️', name: 'วันสิ้นโลก', description: 'ทุกทีมเสีย 50% ของคะแนน แต่ทีมอื่นเสียเพิ่มอีก 100,000!', isLegendary: true },
-            // Secret Cards Start
-            '4117758298': { emoji: '🛡️', name: 'โล่ป้องกัน', description: 'ป้องกันการ์ดโจมตีที่ส่งผลเสียโดยตรง 1 ครั้ง', isSecret: true },
-            '4127957338': { emoji: '🔄', name: 'สวนกลับ', description: 'สะท้อนผลการ์ดโจมตีครั้งถัดไปกลับไปยังผู้ใช้', isSecret: true },
-            '4066922842': { emoji: '🏃‍♂️', name: 'หลบเลี่ยงภาษี', description: 'การ์ด \'สรรพากรลง\' ครั้งถัดไปจะไร้ผลกับทีมเรา', isSecret: true },
-            '4077158746': { emoji: '🌱', name: 'ลงทุนระยะยาว', description: 'จ่าย 20,000 คะแนนตอนนี้ เพื่อรับ 100,000 คะแนนในอีก 5 นาที', isSecret: true },
-            '4117762394': { emoji: '🎉', name: 'ถูกล็อตโต้', description: 'รับแจ็คพอต 300,000 คะแนนจากธนาคาร!', isSecret: true },
-            '4127961434': { emoji: '✖️2️⃣', name: 'ตัวคูณคะแนน', description: 'คะแนนบวกที่ได้จากการ์ดใบถัดไปจะถูกคูณสอง', isSecret: true },
-            '4066926938': { emoji: '🏦💥', name: 'ปล้นธนาคาร', description: 'ขโมย 0.0001% ของเงินธนาคารทั้งหมด!', isSecret: true },
-            '4077162842': { emoji: '🪂', name: 'ร่มชูชีพทองคำ', description: 'หากทีมของคุณอยู่อันดับสุดท้าย คะแนนจะถูกปรับขึ้นเป็นครึ่งหนึ่งของทีมที่นำอยู่', isSecret: true },
-            '4127965530': { emoji: '🌌', name: 'เดิมพันจักรวาล', description: 'สุ่มคะแนนระหว่าง -250,000 ถึง +500,000!', isSecret: true },
-            '4117766490': { emoji: '💫', name: 'คะแนนวิปลาส', description: 'สุ่มสลับคะแนนของทุกทีม!', isSecret: true },
-            '4066931034': { emoji: '👑💰', name: 'ค่าไถ่ราชา', description: 'ทีมที่นำอยู่ต้องจ่าย 50,000 คะแนนให้ทุกทีมที่ตามหลัง', isSecret: true },
-            // Secret Cards End
-        };
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+  <!-- Sound Engine & Game Scripts -->
+  <script>
+    /* =========================================================
+       1. SYNTHESIZED SOUND SYSTEM (Web Audio API)
+       ========================================================= */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
         }
-        
-        function playSound(type, duration = 1) {
-            if (!audioCtx) return;
-            const now = audioCtx.currentTime;
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            switch(type) {
-                case 'scan': oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, now); gainNode.gain.setValueAtTime(0.5, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2); break;
-                case 'positive': oscillator.type = 'triangle'; oscillator.frequency.setValueAtTime(523.25, now); oscillator.frequency.linearRampToValueAtTime(1046.50, now + 0.1); gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2); break;
-                case 'negative': oscillator.type = 'sawtooth'; oscillator.frequency.setValueAtTime(440, now); oscillator.frequency.linearRampToValueAtTime(220, now + 0.2); gainNode.gain.setValueAtTime(0.4, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3); break;
-                case 'gamble_reel':
-                    oscillator.type = 'square';
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    const notes = [261, 293, 329, 349, 392, 440, 493, 523];
-                    for(let i = 0; i < duration * 10; i++) {
-                        oscillator.frequency.setValueAtTime(notes[Math.floor(Math.random() * notes.length)], now + i * 0.1);
-                    }
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                    break;
-                case 'end': oscillator.type = 'sawtooth'; gainNode.gain.setValueAtTime(0.5, now); oscillator.frequency.setValueAtTime(880, now); oscillator.frequency.setValueAtTime(440, now + 0.1); oscillator.frequency.setValueAtTime(880, now + 0.2); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5); break;
-            }
-            oscillator.start(now);
-            oscillator.stop(now + duration);
-        }
-        
-        function initializeTeamStatuses() {
-            teamStatuses = {};
-            for (let i = 1; i <= 3; i++) {
-                teamStatuses[i] = {
-                    isShielded: false,
-                    hasCounter: false,
-                    taxEvasion: false,
-                    scoreMultiplier: 1,
-                };
-            }
-        }
-
-        function updateLeaderIndicator() {
-            let maxScore = -Infinity;
-            let leaders = [];
-            
-            const activeTeamIds = Object.keys(teams).filter(id => parseInt(id) <= numberOfTeams);
-
-            activeTeamIds.forEach(id => {
-                elements[`team${id}`].leaderIndicator.innerHTML = ''; // Clear all first
-                if (teams[id].score > maxScore) {
-                    maxScore = teams[id].score;
-                    leaders = [id];
-                } else if (teams[id].score === maxScore) {
-                    leaders.push(id);
-                }
-            });
-
-            // Only show crown if there's one unique leader and score is positive
-            if (leaders.length === 1 && teams[leaders[0]].score > 0) {
-                elements[`team${leaders[0]}`].leaderIndicator.innerHTML = '<i class="fa-solid fa-crown animate-bounce"></i>';
-            }
-        }
-
-        function updateBankUI() {
-            elements.bankScore.textContent = bankScore.toLocaleString();
-        }
-
-        function updateTeamUI(teamId) {
-            const teamData = teams[teamId];
-            const teamElements = elements[`team${teamId}`];
-            teamElements.name.value = teamData.name;
-            teamElements.name.style.color = teamData.color;
-            teamElements.color.value = teamData.color;
-            teamElements.score.innerText = teamData.score.toLocaleString();
-            teamElements.panel.style.borderColor = teamData.color;
-            teamElements.panel.style.boxShadow = `0 0 20px ${teamData.color}40`;
-            
-            teamElements.score.style.setProperty('--team-color', teamData.color);
-            if (!teamElements.score.classList.contains('score-blinking')) {
-                teamElements.score.classList.add('score-blinking');
-            }
-
-            if(teamData.debt) {
-                teamElements.debtDisplay.textContent = `หนี้สิน: ${teamData.debt.amount.toLocaleString()}`;
-                teamElements.loanContainer.innerHTML = `<button class="w-full py-2 text-sm font-bold rounded-lg bg-orange-500 hover:bg-orange-600 transition text-gray-900" onclick="handleLoan(${teamId})"><i class="fa-solid fa-cash-register"></i> ชำระหนี้</button>`;
-            } else {
-                teamElements.debtDisplay.textContent = '';
-                teamElements.loanContainer.innerHTML = `<div class="flex gap-1"><input type="number" id="team${teamId}-loan-amount" class="manual-score-input w-2/3" placeholder="จำนวนเงิน"><button class="w-1/3 py-2 text-sm font-bold rounded-lg bg-green-500 hover:bg-green-600 transition text-gray-900" onclick="handleLoan(${teamId})"><i class="fa-solid fa-hand-holding-dollar"></i></button></div>`;
-            }
-            updateLeaderIndicator();
-        }
-
-        function renderBattleLog() {
-            elements.feed.innerHTML = '';
-            feedEvents.slice(0, 10).forEach(event => {
-                const teamData = teams[event.teamId] || { color: '#ffffff', name: 'System' };
-                const li = document.createElement('li');
-                li.className = 'flex items-start space-x-3 text-sm';
-                li.innerHTML = `<i class="fa-solid fa-star mt-1" style="color: ${teamData.color};"></i><p class="text-gray-300">${event.teamId ? `<strong style="color: ${teamData.color};">${teamData.name}</strong>` : ''} ${event.text}</p>`;
-                elements.feed.appendChild(li);
-            });
-        }
-
-        function addLog(teamId, text) { feedEvents.unshift({ teamId, text }); if (feedEvents.length > 20) feedEvents.pop(); renderBattleLog(); }
-        
-        function updateAllTeamUIs() {
-            for (let i = 1; i <= numberOfTeams; i++) {
-                if(teams[i]) updateTeamUI(i);
-            }
-        }
-
-        function performCardAction(teamId, barcodeResult, isDejaVu = false) {
-            const getActiveTeams = () => Object.keys(teams).filter(id => parseInt(id) <= numberOfTeams).map(Number);
-            const opponentIds = getActiveTeams().filter(id => id !== teamId);
-            const getLeader = () => getActiveTeams().reduce((l, id) => (teams[id].score > l.score ? { id, score: teams[id].score } : l), { id: null, score: -Infinity });
-
-            let logText = '';
-            let soundType = 'positive';
-            let amount = 0;
-            
-            const isAttackCard = ['3971047770', '4012933466', '4024389978', '3959963994', '3971051866', '4012937562', '4024394074', '3959968090', '3971055962', '4012941658', '3959972186', '3959976282', '4024410458', '4117750106', '4117754202', '4077154650'].includes(barcodeResult);
-
-            if (currentEvent === 'BLOOD_MOON' && isAttackCard) {
-                logText += '[BLOOD MOON!] ';
-            }
-
-            switch (barcodeResult) {
-                // Self-Buff cards
-                case '4024369498': 
-                    let gain1 = 12000; 
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += gain1; bankScore -= gain1; logText = `ได้รับ ${gain1.toLocaleString()} คะแนน`; break;
-                case '3959943514': 
-                    let gain2 = 14000;
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += gain2; bankScore -= gain2; logText = `ได้รับ ${gain2.toLocaleString()} คะแนน`; break;
-                case '3971035482': 
-                    let gain3 = 20000;
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain3 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += gain3; bankScore -= gain3; logText = `ได้รับ ${gain3.toLocaleString()} คะแนน`; break;
-                case '4012917082':
-                    let gain4 = 40000;
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain4 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += gain4; bankScore -= gain4; logText = `ได้รับโบนัสใหญ่ ${gain4.toLocaleString()} คะแนน!`; break;
-                case '4024373594': 
-                    let r1 = Math.floor(Math.random() * 10001) + 10000; 
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { r1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += r1; bankScore -= r1; logText = `สุ่มได้ ${r1.toLocaleString()} คะแนน!`; break;
-                case '3959947610': 
-                    let r2 = Math.floor(Math.random() * 25001) + 25000; 
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { r2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += r2; bankScore -= r2; logText = `สุ่มได้โบนัสใหญ่ ${r2.toLocaleString()} คะแนน!`; break;
-                case '3971039578': 
-                    let g1 = Math.floor(teams[teamId].score * 0.05); 
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { g1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += g1; bankScore -= g1; logText = `ได้รับโบนัส 5% เป็นคะแนน ${g1.toLocaleString()} แต้ม`; break;
-                case '4012921178': 
-                    let g2 = Math.floor(teams[teamId].score * 0.10); 
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { g2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += g2; bankScore -= g2; logText = `ได้รับโบนัส 10% เป็นคะแนน ${g2.toLocaleString()} แต้ม`; break;
-                case '4024377690': if (teams[teamId].score <= 0) { teams[teamId].score = 15000; bankScore -= 15000; logText = `คะแนนฟื้นกลับมาที่ 15,000!`; } else { logText = `ใช้การ์ดชุบชีวิต แต่ไม่เกิดอะไรขึ้น`; soundType = 'negative';} break;
-                case '3959951706': 
-                    let gain5 = 15555;
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain5 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += gain5; bankScore -= gain5; logText = `ได้รับเลขสวย ${gain5.toLocaleString()} คะแนน!`; break;
-                case '3971043674': const leaderForCatchup = getLeader(); if (leaderForCatchup.id && teams[teamId].score < leaderForCatchup.score) { let diff = Math.floor((leaderForCatchup.score - teams[teamId].score) / 2); if (teamStatuses[teamId]?.scoreMultiplier > 1) { diff *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += diff; bankScore -= diff; logText = `ได้รับคะแนนปลอบใจ ${diff.toLocaleString()} แต้ม!`; } else { logText = `ใช้การ์ดปลอบใจ แต่คะแนนนำอยู่แล้ว`; soundType = 'negative'; } break;
-                case '4012925274': 
-                    let interest = Math.floor(teams[teamId].score * 0.01); 
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { interest *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += interest; bankScore -= interest; logText = `ได้รับดอกเบี้ย 1% เป็นคะแนน ${interest.toLocaleString()} แต้ม`; break;
-                case '4024381786':
-                    let gain6 = 17777;
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain6 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += gain6; bankScore -= gain6; logText = `ได้รับเลขนำโชค ${gain6.toLocaleString()} คะแนน!`; break;
-                case '3959955802':
-                    let gain7 = 50000;
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain7 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += gain7; bankScore -= gain7; logText = `ได้รับโบนัสก้อนโต ${gain7.toLocaleString()} คะแนน!`; break;
-                
-                // Global cards
-                case '4012929370': getActiveTeams().forEach(id => { let gain8 = 15000; if(id === teamId && teamStatuses[id]?.scoreMultiplier > 1) { gain8 *= teamStatuses[id].scoreMultiplier; addLog(id, `x${teamStatuses[id].scoreMultiplier} Multiplier!`); teamStatuses[id].scoreMultiplier = 1;} teams[id].score += gain8; bankScore -= gain8; }); teamId = null; logText = `ทุกทีมได้รับ 15,000 คะแนน!`; break;
-                case '4024385882': const totalScore = getActiveTeams().reduce((sum, id) => sum + teams[id].score, 0); const avg = Math.floor(totalScore / numberOfTeams); bankScore += totalScore - (avg * numberOfTeams); getActiveTeams().forEach(id => { teams[id].score = avg; }); teamId = null; logText = `คะแนนของทุกทีมถูกปรับมาอยู่ที่ ${avg.toLocaleString()}!`; soundType = 'negative'; break;
-                case '3959959898': teamId = null; initializeTeamStatuses(); logText = `สนธิสัญญาสงบศึก! สถานะพิเศษทั้งหมดถูกล้าง!`; break;
-                case '4012945754': const lastTwoDigits = getActiveTeams().map(id => teams[id].score % 100); getActiveTeams().forEach((id, index) => { const nextIndex = (index + 1) % numberOfTeams; teams[id].score = (teams[id].score - (teams[id].score % 100)) + lastTwoDigits[nextIndex]; }); teamId = null; logText = `เด็กฝึกงานคีย์คะแนนผิด! เลขท้ายคะแนนของทุกทีมสลับกัน!`; soundType = 'negative'; break;
-                case '4024402266': getActiveTeams().forEach(id => { const originalScore = teams[id].score; teams[id].score = Math.floor(originalScore / 2); bankScore += originalScore - teams[id].score; }); teamId = null; logText = `ค่าเงินเฟ้อ! คะแนนของทุกทีมถูกหารสอง!`; soundType = 'negative'; break;
-                
-                // Attack cards
-                case '3971047770': 
-                    amount = currentEvent === 'BLOOD_MOON' ? 30000 : 20000; let totalStolen1 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'มือไว' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'มือไว'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen1 += amount; } }); if (totalStolen1 > 0) { teams[teamId].score += totalStolen1; logText += `ขโมย ${totalStolen1.toLocaleString()} คะแนน!`; } else { logText += `พยายามใช้ 'มือไว' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
-                case '4012933466': 
-                    amount = currentEvent === 'BLOOD_MOON' ? 60000 : 40000; let totalStolen2 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ปล้นสะดม' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ปล้นสะดม'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen2 += amount; } }); if (totalStolen2 > 0) { teams[teamId].score += totalStolen2; logText += `ปล้นครั้งใหญ่! ขโมย ${totalStolen2.toLocaleString()} คะแนน!`; } else { logText += `พยายาม 'ปล้นสะดม' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
-                case '4024389978': 
-                    amount = Math.floor(Math.random() * 10001) + 10000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); let totalStolen3 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ล้วงกระเป๋า' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ล้วงกระเป๋า'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen3 += amount; } }); if (totalStolen3 > 0) { teams[teamId].score += totalStolen3; logText += `สุ่มขโมย ${totalStolen3.toLocaleString()} คะแนน!`; } else { logText += `พยายาม 'ล้วงกระเป๋า' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
-                case '3959963994':
-                    amount = Math.floor(Math.random() * 25001) + 25000; if(currentEvent === 'BLOOD_MOON') amount = Math.floor(amount*1.5); let totalStolen4 = 0; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ทุบกระปุก' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ทุบกระปุก'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalStolen4 += amount; } }); if (totalStolen4 > 0) { teams[teamId].score += totalStolen4; logText += `สุ่มขโมยครั้งใหญ่ ${totalStolen4.toLocaleString()} คะแนน!`; } else { logText += `พยายาม 'ทุบกระปุก' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
-                case '3971051866': 
-                    let totalDrained = 0; opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; addLog(id, `สวนกลับ 'ดูดพลัง' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ดูดพลัง'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; totalDrained += amount; } }); if (totalDrained > 0) { teams[teamId].score += totalDrained; logText += `ดูดพลัง ${totalDrained.toLocaleString()} จากทีมอื่น!`; } else { logText += `พยายาม 'ดูดพลัง' แต่ถูกป้องกัน!`; } soundType = 'negative'; break;
-                case '4012937562':
-                    logText += `ทำลาย 10% ของคะแนนทีมอื่น!`; opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.15 : 0.10)); if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; bankScore += amount; addLog(id, `สวนกลับ 'ทำลายล้าง' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ทำลายล้าง'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; bankScore += amount; } }); soundType = 'negative'; break;
-                case '4024394074':
-                    logText += `ทำลาย 20% ของคะแนนทีมอื่น!`; opponentIds.forEach(id => { amount = Math.floor(teams[id].score * (currentEvent === 'BLOOD_MOON' ? 0.30 : 0.20)); if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; bankScore += amount; addLog(id, `สวนกลับ 'ระเบิดพลีชีพ' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ระเบิดพลีชีพ'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; bankScore += amount; } }); soundType = 'negative'; break;
-                case '3959968090': 
-                    const leaderToSwap = getLeader(); if (leaderToSwap.id && leaderToSwap.id !== teamId) { if (teamStatuses[leaderToSwap.id]?.isShielded) { addLog(leaderToSwap.id, `ใช้โล่ป้องกัน 'พลิกชะตา'!`); teamStatuses[leaderToSwap.id].isShielded = false; logText = 'พยายามสลับคะแนน แต่ผู้นำป้องกันไว้ได้!'; } else { [teams[teamId].score, teams[leaderToSwap.id].score] = [teams[leaderToSwap.id].score, teams[teamId].score]; logText = `พลิกชะตา! สลับคะแนนกับทีมผู้นำ (${teams[leaderToSwap.id].name})!`; } soundType = 'negative'; } else { logText = `พยายามสลับคะแนน แต่เป็นผู้นำอยู่แล้วหรือไม่มีผู้นำชัดเจน`; soundType = 'negative'; } break;
-                case '3971055962':
-                    logText = `รีเซ็ตคะแนนทีมอื่นเหลือ 25,000!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { addLog(id, `'ล้างบาง' ถูกสวนกลับ แต่ไม่มีผลกับ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ล้างบาง'!`); teamStatuses[id].isShielded = false; } else { if (teams[id].score > 25000) { bankScore += teams[id].score - 25000; teams[id].score = 25000; } } }); soundType = 'negative'; break;
-                case '4012941658':
-                    const leaderToTax = getLeader(); if (leaderToTax.id && leaderToTax.id !== teamId) { if (teamStatuses[leaderToTax.id]?.isShielded) { addLog(leaderToTax.id, `ใช้โล่ป้องกัน 'ภาษีคนรวย'!`); teamStatuses[leaderToTax.id].isShielded = false; logText = 'พยายามเก็บภาษี แต่ผู้นำป้องกันไว้ได้!'; } else { amount = Math.floor((leaderToTax.score - teams[teamId].score) * (currentEvent === 'BLOOD_MOON' ? 0.225 : 0.15)); teams[teamId].score += amount; teams[leaderToTax.id].score -= amount; logText += `เก็บภาษีคนรวย! ได้รับ ${amount.toLocaleString()} คะแนนจากทีม ${teams[leaderToTax.id].name}!`; } } else { logText = `พยายามเก็บภาษี แต่ไม่สำเร็จ`; soundType = 'negative'; } break;
-                case '3959972186':
-                    amount = currentEvent === 'BLOOD_MOON' ? 52500 : 35000; logText += `ทิ้งระเบิดคะแนน! ทีมอื่นเสีย ${amount.toLocaleString()} แต้ม!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { teams[teamId].score -= amount; bankScore += amount; addLog(id, `สวนกลับ 'อุกกาบาต' ใส่ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'อุกกาบาต'!`); teamStatuses[id].isShielded = false; } else { teams[id].score -= amount; bankScore += amount; } }); soundType = 'negative'; break;
-                case '3959976282': 
-                    const leaderForIRS = getLeader(); const scores = getActiveTeams().map(id => teams[id].score); const isTie = scores.filter(s => s === leaderForIRS.score).length > 1; if (leaderForIRS.id && !isTie) { if (teamStatuses[leaderForIRS.id]?.taxEvasion) { logText += `สรรพากรลง! แต่ทีมผู้นำ (${teams[leaderForIRS.id].name}) หลบเลี่ยงภาษีได้สำเร็จ!`; teamStatuses[leaderForIRS.id].taxEvasion = false; teamId = null; } else if (teamStatuses[leaderForIRS.id]?.isShielded) { logText += `สรรพากรลง! แต่ทีมผู้นำ (${teams[leaderForIRS.id].name}) ใช้โล่ป้องกันไว้ได้!`; teamStatuses[leaderForIRS.id].isShielded = false; teamId = null; } else { amount = Math.floor(teams[leaderForIRS.id].score * (currentEvent === 'BLOOD_MOON' ? 0.45 : 0.30)); teams[leaderForIRS.id].score -= amount; bankScore += amount; logText += `สรรพากรลง! ทีมผู้นำ (${teams[leaderForIRS.id].name}) โดนหัก ${amount.toLocaleString()} คะแนน!`; teamId = null; soundType = 'negative'; } } else { logText = `สรรพากรมา แต่ไม่มีผู้นำชัดเจน เลยรอดตัวไป!`; teamId = null; } break;
-                case '4024410458': opponentIds.forEach(id => teams[id].score += 5000); teams[teamId].score -= 10000; bankScore += (10000 - 5000 * opponentIds.length); logText = `มอบของขวัญกวนๆ! ทีมเราเสีย 10,000 แต่ทีมอื่นได้รับ 5,000!`; soundType = 'negative'; break;
-                
-                // Legendary cards
-                case '4127945050': 
-                    let legendaryGain1 = 500000; 
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { legendaryGain1 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += legendaryGain1; bankScore -= legendaryGain1; logText = `เข้าสู่ยุคทอง! ได้รับ ${legendaryGain1.toLocaleString()} คะแนน!`; break;
-                case '4117750106':
-                    logText = `เกิดวิกฤตเศรษฐกิจ!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { addLog(id, `'วิกฤตเศรษฐกิจ' ถูกสวนกลับ แต่ไม่มีผลกับ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'วิกฤตเศรษฐกิจ'!`); teamStatuses[id].isShielded = false; } else { const original = teams[id].score; teams[id].score = Math.floor(original / 2); bankScore += original - teams[id].score; } }); soundType = 'negative'; break;
-                case '4127949146':
-                    if (teams[teamId].debt) { if (opponentIds.length > 0) { const unluckyOpponentId = opponentIds[Math.floor(Math.random() * opponentIds.length)]; const debtAmount = teams[teamId].debt.amount; clearInterval(teams[teamId].debt.interval); teams[teamId].debt = null; if (teams[unluckyOpponentId].debt) { clearInterval(teams[unluckyOpponentId].debt.interval); } teams[unluckyOpponentId].debt = { principal: debtAmount, amount: debtAmount, interval: setInterval(() => { const interest = Math.floor(teams[unluckyOpponentId].debt.principal * 0.20); teams[unluckyOpponentId].debt.amount += interest; addLog(unluckyOpponentId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teams[unluckyOpponentId].debt.amount.toLocaleString()}`); updateTeamUI(unluckyOpponentId); }, 600000) }; logText = `ล้างหนี้สำเร็จ! หนี้ทั้งหมดถูกโอนไปให้ทีม ${teams[unluckyOpponentId].name}!`; soundType = 'negative'; } else { logText = `พยายามโอนหนี้ แต่ไม่มีทีมอื่น!`; soundType = 'negative'; } } else { logText = `พยายามใช้การ์ดล้างหนี้ แต่ไม่มีหนี้สิน!`; soundType = 'negative'; } break;
-                case '4066914650': 
-                    const leaderToOvertake = getLeader(); if (leaderToOvertake.id && teams[teamId].score < leaderToOvertake.score) { let gain9 = (leaderToOvertake.score + 1) - teams[teamId].score; if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain9 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += gain9; bankScore -= gain9; logText = `ขึ้นเป็นราชา! คะแนนถูกปรับให้แซงผู้นำ!`; } else { logText = `ใช้การ์ดผู้สร้างราชา แต่คะแนนนำอยู่แล้ว!`; soundType = 'negative'; } break;
-                case '4077150554':
-                    const sortedTeams = getActiveTeams().map(id => ({ id: parseInt(id), score: teams[id].score })).sort((a, b) => a.score - b.score); if (sortedTeams.length > 1) { const trailer = sortedTeams[0]; const leader = sortedTeams[sortedTeams.length - 1]; if (trailer.id !== leader.id && teamId === trailer.id) { if (teamStatuses[leader.id]?.isShielded) { logText = `ปฏิวัติล้มเหลว! ทีม ${teams[leader.id].name} ป้องกันไว้ได้!`; teamStatuses[leader.id].isShielded = false; } else { amount = Math.floor(teams[leader.id].score * 0.5); teams[trailer.id].score += amount; teams[leader.id].score -= amount; logText = `ปฏิวัติ! ทีม ${teams[trailer.id].name} ขโมย 50% ของคะแนนจากทีม ${teams[leader.id].name}!`; } } else { logText = `พยายามปฏิวัติแต่เงื่อนไขไม่ถูกต้อง! (ต้องเป็นทีมที่คะแนนน้อยที่สุดเท่านั้น)`; soundType = 'negative'; } } else { logText = `พยายามปฏิวัติแต่มีทีมเดียว!`; soundType = 'negative'; } break;
-                case '4117754202':
-                    logText = `เกมศูนย์!`; opponentIds.forEach(id => { if (teamStatuses[id]?.hasCounter) { addLog(id, `'เกมศูนย์' ถูกสวนกลับ แต่ไม่มีผลกับ ${teams[teamId].name}!`); teamStatuses[id].hasCounter = false; } else if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'เกมศูนย์'!`); teamStatuses[id].isShielded = false; } else { bankScore += teams[id].score; teams[id].score = 0; } }); soundType = 'negative'; break;
-                case '4127953242':
-                    let legendaryGain2 = 1000000;
-                    if (teamStatuses[teamId]?.scoreMultiplier > 1) { legendaryGain2 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; }
-                    teams[teamId].score += legendaryGain2; bankScore -= legendaryGain2; logText = `สวรรค์เมตตา! ได้รับ ${legendaryGain2.toLocaleString()} คะแนน!`; break;
-                case '0053': teamId = null; logText = `เปิดกล่องแพนโดร่า!`; soundType = 'negative'; setTimeout(() => { const legendaryCards = Object.keys(cardDatabase).filter(k => cardDatabase[k].isLegendary && k !== '0053'); getActiveTeams().forEach((id, index) => { setTimeout(() => { let card = legendaryCards[Math.floor(Math.random() * legendaryCards.length)]; addLog(null, `ทีม ${teams[id].name} ได้รับผลจาก: ${cardDatabase[card].name}!`); performCardAction(id, card); }, (index + 1) * 2000); }); }, 1000); playSound(soundType); addLog(teamId, logText); if (!isDejaVu) { lastCardAction = { teamId, barcode: barcodeResult }; } return;
-                case '4066918746':
-                    logText = `ภาพสะท้อน!`; opponentIds.forEach(id => { if (teamStatuses[id]?.isShielded) { addLog(id, `ใช้โล่ป้องกัน 'ภาพสะท้อน'!`); teamStatuses[id].isShielded = false; } else { const diff = teams[teamId].score - teams[id].score; bankScore -= diff; teams[id].score = teams[teamId].score; } }); soundType = 'negative'; break;
-                case '4077154650': getActiveTeams().forEach(id => { const loss = Math.floor(teams[id].score * 0.5); teams[id].score -= loss; bankScore += loss; }); opponentIds.forEach(id => { if(!teamStatuses[id]?.isShielded){ teams[id].score -= 100000; bankScore += 100000; } else { addLog(id, `ใช้โล่ป้องกันความเสียหายเพิ่มเติมจาก 'วันสิ้นโลก'!`); teamStatuses[id].isShielded = false;} }); logText = `วันสิ้นโลก! ทุกทีมเสีย 50% ของคะแนน และทีมอื่นเสียเพิ่มอีก 100,000!`; soundType = 'negative'; break;
-
-                // Simple cards
-                case '3971064154': if (lastCardAction.barcode) { addLog(null, `เดจาวู! การ์ดใบที่แล้วทำงานอีกครั้ง!`); performCardAction(lastCardAction.teamId, lastCardAction.barcode, true); return; } else { logText = `ใช้เดจาวู แต่ไม่มีการ์ดใบก่อนหน้า...`; teamId = null; soundType = 'negative';} break;
-                case '4024406362': if (teams[teamId].score >= 30000) { teams[teamId].score -= 30000; bankScore += 30000; if (Math.random() < 0.5) { let gain10 = 60000; if (teamStatuses[teamId]?.scoreMultiplier > 1) { gain10 *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += gain10; bankScore -= gain10; logText = `วัดดวง... และชนะ! ได้รับ ${gain10.toLocaleString()} คะแนน!`; } else { logText = `วัดดวง... และแพ้! เสีย 30,000 คะแนนไปฟรีๆ!`; soundType = 'negative'; } } else { logText = `พยายามวัดดวง แต่คะแนนไม่พอ!`; soundType = 'negative'; } break;
-                case '3971068250': lastCardAction.barcode = 'BLOCKED'; logText = `หลุมดำ! การ์ดใบถัดไปของทีมที่ใช้การ์ดล่าสุดจะไร้ผล!`; soundType = 'negative'; break;
-                // Cards with no score effect but need logging
-                case '4024398170': case '3971060058': case '4012949850': case '3959980378': case '4012953946': logText = `${cardDatabase[barcodeResult].name}!`; soundType = 'negative'; break;
-                case '4066906458': case '4077142362': case '4117746010': case '4066910554': case '4077146458': const reps = Math.floor(Math.random() * 21) + 10; let unit = 'ครั้ง'; if (barcodeResult === '4117746010' || barcodeResult === '4077146458') unit = 'วินาที'; if (barcodeResult === '4066910554') unit = 'รอบ'; logText = `สั่งให้ทีมอื่น ${cardDatabase[barcodeResult].description.replace('ทีมอื่นต้อง', '')} ${reps} ${unit}!`; soundType = 'negative'; break;
-
-                // Secret cards
-                case '4117758298': teamStatuses[teamId].isShielded = true; logText = `เปิดใช้งานโล่ป้องกัน!`; break;
-                case '4127957338': teamStatuses[teamId].hasCounter = true; logText = `ตั้งท่าสวนกลับ!`; break;
-                case '4066922842': teamStatuses[teamId].taxEvasion = true; logText = `เตรียมหลบเลี่ยงภาษี!`; break;
-                case '4077158746': if (teams[teamId].score >= 20000) { teams[teamId].score -= 20000; bankScore += 20000; logText = `ลงทุน 20,000 คะแนน... อีก 5 นาทีมารอลุ้นผลตอบแทน!`; setTimeout(() => { let investmentReturn = 100000; if(teamStatuses[teamId]?.scoreMultiplier > 1){ investmentReturn *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier on Investment!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += investmentReturn; bankScore -= investmentReturn; addLog(teamId, `การลงทุนสำเร็จ! ได้รับเงินปันผล ${investmentReturn.toLocaleString()} คะแนน!`); playSound('positive'); updateTeamUI(teamId); updateBankUI(); }, 300000); } else { logText = `พยายามลงทุน แต่เงินไม่พอ!`; soundType = 'negative'; } break;
-                case '4117762394': let prizeAmount = 300000; if (teamStatuses[teamId]?.scoreMultiplier > 1) { prizeAmount *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += prizeAmount; bankScore -= prizeAmount; logText = `ถูกล็อตโต้! รับแจ็คพอต ${prizeAmount.toLocaleString()} คะแนน!`; break;
-                case '4127961434': teamStatuses[teamId].scoreMultiplier = 2; logText = `เปิดใช้งานตัวคูณคะแนน! การ์ดบวกคะแนนใบถัดไปจะให้ผล x2!`; break;
-                case '4066926938': let heistAmount = Math.floor(bankScore * 0.000001); if (teamStatuses[teamId]?.scoreMultiplier > 1) { heistAmount *= teamStatuses[teamId].scoreMultiplier; addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier!`); teamStatuses[teamId].scoreMultiplier = 1; } teams[teamId].score += heistAmount; bankScore -= heistAmount; logText = `ปล้นธนาคารสำเร็จ! ขโมยเงินมาได้ ${heistAmount.toLocaleString()} คะแนน!`; break;
-                case '4077162842':
-                    const sortedTeamsForParachute = getActiveTeams().map(id => ({ id, score: teams[id].score })).sort((a, b) => a.score - b.score);
-                    if (sortedTeamsForParachute[0].id === teamId && sortedTeamsForParachute.length > 1) {
-                        const leaderScore = sortedTeamsForParachute[sortedTeamsForParachute.length - 1].score;
-                        const targetScore = Math.floor(leaderScore / 2);
-                        const scoreGained = targetScore - teams[teamId].score;
-                        if (scoreGained > 0) {
-                            teams[teamId].score += scoreGained;
-                            bankScore -= scoreGained;
-                            logText = `ร่มชูชีพทองคำทำงาน! คะแนนพุ่งไปที่ ${targetScore.toLocaleString()}!`;
-                        } else {
-                            logText = `ใช้ร่มชูชีพทองคำ แต่คะแนนสูงเกินไป!`;
-                            soundType = 'negative';
-                        }
-                    } else {
-                        logText = `พยายามใช้ร่มชูชีพทองคำ แต่ไม่ได้อยู่อันดับสุดท้าย!`;
-                        soundType = 'negative';
-                    }
-                    break;
-                case '4127965530':
-                    const cosmicGambleAmount = Math.floor(Math.random() * 750001) - 250000;
-                    teams[teamId].score += cosmicGambleAmount;
-                    bankScore -= cosmicGambleAmount;
-                    if (cosmicGambleAmount >= 0) {
-                        logText = `เดิมพันจักรวาล! ได้รับ ${cosmicGambleAmount.toLocaleString()} คะแนน!`;
-                    } else {
-                        logText = `เดิมพันจักรวาล! เสีย ${Math.abs(cosmicGambleAmount).toLocaleString()} คะแนน!`;
-                        soundType = 'negative';
-                    }
-                    break;
-                case '4117766490':
-                    const activeIds = getActiveTeams();
-                    const currentScores = activeIds.map(id => teams[id].score);
-                    // Fisher-Yates shuffle
-                    for (let i = currentScores.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [currentScores[i], currentScores[j]] = [currentScores[j], currentScores[i]];
-                    }
-                    activeIds.forEach((id, index) => {
-                        teams[id].score = currentScores[index];
-                    });
-                    logText = `คะแนนวิปลาส! คะแนนของทุกทีมถูกสลับกันมั่ว!`;
-                    teamId = null; // System event
-                    soundType = 'negative';
-                    break;
-                case '4066931034': const leaderForRansom = getLeader(); if (leaderForRansom.id && teamId !== leaderForRansom.id) { logText = `ใช้การ์ดค่าไถ่ แต่ไม่ได้เป็นราชา!`; soundType = 'negative'; break; } const followers = getActiveTeams().filter(id => teams[id].score < teams[teamId].score); if (followers.length > 0) { const ransomPerTeam = 50000; const totalRansom = ransomPerTeam * followers.length; if (teams[teamId].score >= totalRansom) { teams[teamId].score -= totalRansom; followers.forEach(id => { teams[id].score += ransomPerTeam; }); logText = `เป็นราชาต้องจ่าย! จ่ายค่าไถ่ ${totalRansom.toLocaleString()} คะแนนให้ทีมอื่น!`; soundType = 'negative'; } else { logText = `พยายามจ่ายค่าไถ่ แต่คะแนนไม่พอ!`; soundType = 'negative'; } } else { logText = `เป็นราชาคนเดียว ไม่มีใครให้จ่ายค่าไถ่!`; } break;
-
-                default: logText = `สแกนการ์ด "${barcodeResult}" แต่ไม่รู้จัก`; soundType = 'negative'; break;
-            }
-            
-            playSound(soundType);
-            addLog(teamId, logText);
-            if (!isDejaVu) {
-                lastCardAction = { teamId, barcode: barcodeResult };
-            }
-
-            updateAllTeamUIs();
-            updateBankUI();
-        }
-
-        function showCardInfo(barcode) {
-            const card = cardDatabase[barcode];
-            if (card) {
-                let description = card.description;
-                showCustomAlert(card.name, description, card.emoji);
-                setTimeout(() => {
-                    closeCustomAlert();
-                    performCardAction(activeTeam, barcode);
-                }, 4000);
-            } else {
-                performCardAction(activeTeam, barcode);
-            }
-        }
-
-        function handleRfidInput(event, teamId) {
-            if (event.key === 'Enter') {
-                initAudio();
-                const rfidValue = event.target.value;
-                if (rfidValue) {
-                    if (lastCardAction.barcode === 'BLOCKED' && lastCardAction.teamId === teamId) {
-                        addLog(teamId, "การ์ดถูกบล็อคโดยหลุมดำ!");
-                        playSound('negative');
-                        lastCardAction.barcode = null; // Reset block
-                        event.target.value = '';
-                        return;
-                    }
-                    playSound('scan');
-                    activeTeam = teamId;
-                    showCardInfo(rfidValue);
-                    event.target.value = '';
-                }
-            }
-        }
-
-        function showCustomAlert(title, message, icon) {
-            elements.alertTitle.textContent = title;
-            elements.alertMessage.textContent = message;
-            elements.alertIcon.innerHTML = `<div class="text-5xl">${icon}</div>`;
-            elements.alertButtons.innerHTML = `<button id="close-alert-button" class="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 transition">OK</button>`;
-            document.getElementById('close-alert-button').onclick = closeCustomAlert;
-            elements.alertModal.classList.remove('opacity-0', 'pointer-events-none');
-        }
-
-        function showCustomConfirm(title, message, icon, onConfirm) {
-             elements.alertTitle.textContent = title;
-            elements.alertMessage.textContent = message;
-            elements.alertIcon.innerHTML = `<div class="text-5xl">${icon}</div>`;
-            elements.alertButtons.innerHTML = `
-                <button id="confirm-yes" class="bg-green-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-green-700 transition">Yes</button>
-                <button id="confirm-no" class="bg-red-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-red-700 transition">No</button>
-            `;
-            document.getElementById('confirm-yes').onclick = () => {
-                onConfirm();
-                closeCustomAlert();
-            };
-            document.getElementById('confirm-no').onclick = closeCustomAlert;
-            elements.alertModal.classList.remove('opacity-0', 'pointer-events-none');
-        }
-        
-        function closeCustomAlert() {
-            elements.alertModal.classList.add('opacity-0', 'pointer-events-none');
-        }
-
-        function handleManualScore(event, teamId) {
-            if (event.key === 'Enter') {
-                initAudio();
-                const inputElement = event.target;
-                const value = parseInt(inputElement.value, 10);
-                if (!isNaN(value)) {
-                    teams[teamId].score += value;
-                    bankScore -= value;
-                    updateBankUI();
-                    const actionText = value >= 0 ? `เพิ่ม` : `ลด`;
-                    addLog(teamId, `คะแนนถูก${actionText}โดยแอดมิน ${Math.abs(value).toLocaleString()} คะแนน!`);
-                    playSound(value >= 0 ? 'positive' : 'negative');
-                    updateTeamUI(teamId);
-                    inputElement.value = '';
-                }
-            }
-        }
-        
-        function getGamblePrize() {
-            const rand = Math.random();
-            if (rand < 0.4) { return Math.floor(Math.random() * 9001); } 
-            else if (rand < 0.7) { return Math.floor(Math.random() * (300000 - 9001 + 1)) + 9001; }
-            else if (rand < 0.9) { return Math.floor(Math.random() * (700000 - 300001 + 1)) + 300001; }
-            else { return Math.floor(Math.random() * (1000000 - 700001 + 1)) + 700001; }
-        }
-
-        function handleGamble(teamId) {
-            initAudio();
-            const betAmount = 10000;
-            const teamData = teams[teamId];
-
-            if (teamData.score < betAmount) {
-                addLog(teamId, `พยายามจะเดิมพัน แต่คะแนนไม่พอ! (ต้องการ ${betAmount.toLocaleString()})`);
-                playSound('negative');
-                return;
-            }
-
-            teamData.score -= betAmount;
-            bankScore += betAmount;
-            updateBankUI();
-            updateTeamUI(teamId);
-            
-            elements.gambleModal.classList.remove('opacity-0', 'pointer-events-none');
-            elements.gambleResult.classList.add('hidden');
-            
-            playSound('gamble_reel', 5);
-            const reelInterval = setInterval(() => {
-                const randomDisplay = Math.floor(Math.random() * 1000000);
-                elements.gambleReel.textContent = randomDisplay.toString().padStart(7, '0');
-            }, 50);
-
-            setTimeout(() => {
-                clearInterval(reelInterval);
-                let prize = getGamblePrize();
-                if (teamStatuses[teamId]?.scoreMultiplier > 1) {
-                    prize *= teamStatuses[teamId].scoreMultiplier;
-                    addLog(teamId, `x${teamStatuses[teamId].scoreMultiplier} Multiplier on Gamble!`);
-                    teamStatuses[teamId].scoreMultiplier = 1;
-                }
-                teamData.score += prize;
-                bankScore -= prize;
-                
-                elements.gambleReel.textContent = prize.toLocaleString();
-                
-                let resultMessage = (prize > 0) ? `คุณได้รับรางวัล ${prize.toLocaleString()} คะแนน!` : `เสียใจด้วย... คุณไม่ได้อะไรเลย!`;
-                if(prize > 700000) resultMessage = `แจ็คพอตแตก! คุณได้รับรางวัลใหญ่ ${prize.toLocaleString()} คะแนน!`;
-                
-                playSound(prize > 0 ? 'positive' : 'negative');
-                
-                elements.gambleResult.querySelector('p').textContent = resultMessage;
-                elements.gambleResult.classList.remove('hidden');
-
-                addLog(teamId, `จ่าย 10,000 เพื่อวัดดวง... และได้รับ ${prize.toLocaleString()} คะแนน!`);
-                updateBankUI();
-                updateTeamUI(teamId);
-            }, 5000);
-        }
-
-        function closeGambleModal() {
-            elements.gambleModal.classList.add('opacity-0', 'pointer-events-none');
-        }
-        
-        // --- SUMMARY LOGIC ---
-        function handleSummary() {
-            initAudio(); playSound('end');
-            const sortedTeams = Object.entries(teams)
-                .filter(([id]) => parseInt(id) <= numberOfTeams)
-                .sort(([, a], [, b]) => b.score - a.score);
-
-            elements.summaryContent.innerHTML = sortedTeams.map(([id, team], index) => `
-                <div>
-                    <h4 class="text-lg font-bold">${index === 0 ? 'ผู้ชนะ <i class="fa-solid fa-crown text-yellow-400"></i>' : `อันดับที่ ${index + 1}`}</h4>
-                    <p class="font-pixel text-2xl" style="color: ${team.color};">${team.name}</p>
-                    <p class="text-xl font-bold">${team.score.toLocaleString()} PTS</p>
-                </div>
-            `).join('<hr class="border-gray-700 my-2">');
-            
-            const punishmentReel = document.createElement('div');
-            punishmentReel.className = 'font-pixel text-2xl text-yellow-400';
-            elements.summaryPunishment.innerHTML = '';
-            elements.summaryPunishment.appendChild(punishmentReel);
-
-            elements.closeSummaryButton.classList.add('hidden');
-            elements.summaryModal.classList.remove('opacity-0', 'pointer-events-none');
-
-            const punishments = ["กระโดดตบ 30 ครั้ง", "ดันพื้น 20 ครั้ง", "แพลงค์ 2 นาที", "ปั่นจิ้งหรีด 10 รอบ แล้วเดินตรง", "ออกกำลังกายอะไรก็ได้ 30 วินาที"];
-            const loser = sortedTeams[sortedTeams.length - 1][1];
-
-            if (sortedTeams[0][1].score > loser.score) {
-                playSound('gamble_reel', 5);
-                const reelInterval = setInterval(() => {
-                    punishmentReel.textContent = punishments[Math.floor(Math.random() * punishments.length)];
-                }, 100);
-
-                setTimeout(() => {
-                    clearInterval(reelInterval);
-                    const finalPunishment = punishments[Math.floor(Math.random() * punishments.length)];
-                    elements.summaryPunishment.innerHTML = `<h4 class="text-lg font-bold text-red-500">บทลงโทษสำหรับ ${loser.name}</h4><p class="text-2xl font-bold text-white">${finalPunishment}</p>`;
-                    elements.closeSummaryButton.classList.remove('hidden');
-                }, 5000);
-            } else { // Draw
-                elements.summaryContent.innerHTML = `<h4 class="font-pixel text-2xl text-yellow-400">เสมอ!</h4><p class="text-xl font-bold">${loser.score.toLocaleString()} PTS</p>`;
-                elements.summaryPunishment.innerHTML = `<h4 class="text-lg font-bold">ไม่มีผู้แพ้!</h4><p class="text-2xl font-bold text-white">รอดตัวไปนะ!</p>`;
-                elements.closeSummaryButton.classList.remove('hidden');
-            }
-        }
-
-        function closeSummaryModal() {
-            elements.summaryModal.classList.add('opacity-0', 'pointer-events-none');
-        }
-
-        // --- SPECIAL EVENTS ---
-        function triggerRandomEvent() {
-            if (currentEvent) return; 
-            const event = ['BLOOD_MOON', 'MARKET_CRASH', null, null, null][Math.floor(Math.random() * 5)];
-
-            if (event === 'BLOOD_MOON') {
-                currentEvent = 'BLOOD_MOON';
-                elements.eventBannerContainer.innerHTML = `<div class="panel p-4 text-center border-red-500 event-banner"><h3 class="font-pixel text-red-500 text-lg mb-2">BLOOD MOON!</h3><p class="text-white">การ์ดโจมตีทั้งหมดรุนแรงขึ้น 50% เป็นเวลา 1 นาที!</p></div>`;
-                playSound('negative');
-                setTimeout(() => { currentEvent = null; elements.eventBannerContainer.innerHTML = ''; }, 60000);
-            } else if (event === 'MARKET_CRASH') {
-                elements.eventBannerContainer.innerHTML = `<div class="panel p-4 text-center border-yellow-500 event-banner"><h3 class="font-pixel text-yellow-500 text-lg mb-2">MARKET CRASH!</h3><p class="text-white">ตลาดหุ้นล่ม! คะแนนทุกทีมลดลง 15%!</p></div>`;
-                playSound('negative');
-                Object.keys(teams).filter(id => parseInt(id) <= numberOfTeams).forEach(id => {
-                    const loss = Math.floor(teams[id].score * 0.15);
-                    teams[id].score -= loss; bankScore += loss;
-                });
-                updateBankUI(); addLog(null, `ตลาดหุ้นล่ม! คะแนนทุกทีมลดลง 15%!`); updateAllTeamUIs();
-                setTimeout(() => { elements.eventBannerContainer.innerHTML = ''; }, 10000);
-            }
-        }
-        
-        // --- TROLL BUTTONS & RESET ---
-        function handleResetGame() {
-            showCustomConfirm('รีเซ็ตเกม?', 'คุณแน่ใจหรือไม่ว่าจะรีเซ็ตคะแนนและเริ่มต้นใหม่ทั้งหมด?', '🤔', () => {
-                Object.keys(teams).filter(id => parseInt(id) <= numberOfTeams).forEach(id => {
-                    teams[id].score = 100000;
-                    if (teams[id].debt) { clearInterval(teams[id].debt.interval); teams[id].debt = null; }
-                });
-                bankScore = 1000000000000;
-                feedEvents.length = 0;
-                initializeTeamStatuses();
-                updateAllTeamUIs();
-                updateBankUI();
-                renderBattleLog();
-                addLog(null, 'เกมถูกรีเซ็ต!');
-                playSound('end');
-            });
-        }
-        
-        function handleRobinHood() {
-            const sorted = Object.entries(teams).filter(([id]) => parseInt(id) <= numberOfTeams).sort(([,a],[,b]) => a.score-b.score);
-            if (sorted.length < 2 || sorted[0][1].score === sorted[sorted.length-1][1].score) {
-                addLog(null, 'โรบินฮู้ดปรากฏตัว แต่ไม่มีคนรวยหรือจนชัดเจน!'); playSound('negative'); return;
-            }
-            const leaderId = sorted[sorted.length-1][0];
-            const trailerId = sorted[0][0];
-            const amount = Math.floor(teams[leaderId].score * 0.25);
-            teams[leaderId].score -= amount; teams[trailerId].score += amount;
-            addLog(null, `โรบินฮู้ดปล้น ${amount.toLocaleString()} จาก ${teams[leaderId].name} ไปให้ ${teams[trailerId].name}!`);
-            playSound('positive'); updateAllTeamUIs();
-        }
-
-        function handleBlindBet() {
-            addLog(null, 'เดิมพันตาบอด! ทุกทีมต้องวัดดวง!'); playSound('negative');
-            Object.keys(teams).filter(id => parseInt(id) <= numberOfTeams).forEach((id, i) => {
-                setTimeout(() => handleGamble(parseInt(id)), 500 + i * 5500);
-            });
-        }
-
-        function handleRandomEventButton() {
-            const activeIds = Object.keys(teams).filter(id => parseInt(id) <= numberOfTeams);
-            const luckyTeamId = activeIds[Math.floor(Math.random() * activeIds.length)];
-            teams[luckyTeamId].score += 50000; bankScore -= 50000;
-            addLog(null, `โชคชะตาเข้าข้างทีม ${teams[luckyTeamId].name}! ได้รับ 50,000!`);
-            playSound('positive'); updateAllTeamUIs(); updateBankUI();
-        }
-        
-        // --- LOAN, BUY, BLACK MARKET LOGIC ---
-        function handleLoan(teamId) { initAudio(); const teamData = teams[teamId]; if (teamData.debt) { if (teamData.score >= teamData.debt.amount) { teamData.score -= teamData.debt.amount; bankScore += teamData.debt.amount; addLog(teamId, `ชำระหนี้ ${teamData.debt.amount.toLocaleString()} คะแนนเรียบร้อย!`); clearInterval(teamData.debt.interval); teamData.debt = null; playSound('positive'); } else { addLog(teamId, `คะแนนไม่พอชำระหนี้!`); playSound('negative'); } } else { const loanAmountInput = document.getElementById(`team${teamId}-loan-amount`); const amount = parseInt(loanAmountInput.value, 10); if (!isNaN(amount) && amount > 0 && bankScore >= amount) { teamData.score += amount; bankScore -= amount; teamData.debt = { principal: amount, amount: amount, interval: setInterval(() => { const interest = Math.floor(teamData.debt.principal * 0.20); teamData.debt.amount += interest; addLog(teamId, `โดนดอกเบี้ย ${interest.toLocaleString()}! ยอดหนี้รวมเป็น ${teamData.debt.amount.toLocaleString()}`); updateTeamUI(teamId); }, 600000) }; addLog(teamId, `กู้ยืม ${amount.toLocaleString()} คะแนนสำเร็จ!`); playSound('positive'); loanAmountInput.value = ''; } else { addLog(teamId, `ไม่สามารถกู้ยืมได้! (ตรวจสอบจำนวนเงินและเงินธนาคาร)`); playSound('negative'); } } updateBankUI(); updateTeamUI(teamId); }
-        function handleBuyCards(teamId) { initAudio(); const teamData = teams[teamId]; const teamElements = elements[`team${teamId}`]; const quantity = parseInt(teamElements.buyAmountInput.value, 10); if (isNaN(quantity) || quantity <= 0) { addLog(teamId, `กรุณาใส่จำนวนการ์ดที่ต้องการซื้อ!`); playSound('negative'); return; } const totalCost = quantity * 50000; if (teamData.score >= totalCost) { teamData.score -= totalCost; bankScore += totalCost; updateBankUI(); addLog(teamId, `ซื้อการ์ด ${quantity} ใบสำเร็จ! เสียไป ${totalCost.toLocaleString()} คะแนน`); playSound('positive'); teamElements.buyAmountInput.value = ''; updateTeamUI(teamId); } else { addLog(teamId, `คะแนนไม่พอซื้อการ์ด! (ต้องการ ${totalCost.toLocaleString()})`); playSound('negative'); } }
-        function handleBlackMarket(teamId) { initAudio(); const cost = 250000; const teamData = teams[teamId]; if (teamData.score < cost) { addLog(teamId, `คะแนนไม่พอเข้าตลาดมืด! (ต้องการ ${cost.toLocaleString()})`); playSound('negative'); return; } teamData.score -= cost; bankScore += cost; updateBankUI(); updateTeamUI(teamId); addLog(teamId, `จ่าย ${cost.toLocaleString()} เข้าตลาดมืด...`); playSound('gamble_reel', 2); setTimeout(() => { const legendaryCards = Object.keys(cardDatabase).filter(k => cardDatabase[k].isLegendary); const randomCard = legendaryCards[Math.floor(Math.random() * legendaryCards.length)]; activeTeam = teamId; showCardInfo(randomCard); }, 2000); }
-        
-        // --- Team Setup ---
-        function setupTeams(count) {
-            if (count === 3) {
-                numberOfTeams = 3;
-                if (!teams[3]) {
-                    teams[3] = { name: 'Green Team', color: '#22c55e', score: 100000, debt: null };
-                }
-                elements.team3.panel.style.display = 'flex';
-                elements.teamsGrid.classList.remove('lg:grid-cols-2');
-                elements.teamsGrid.classList.add('lg:grid-cols-3');
-                elements.set3TeamsBtn.classList.add('bg-blue-600', 'border-blue-400');
-                elements.set3TeamsBtn.classList.remove('bg-gray-700', 'border-transparent');
-                elements.set2TeamsBtn.classList.remove('bg-blue-600', 'border-blue-400');
-                elements.set2TeamsBtn.classList.add('bg-gray-700', 'border-transparent');
-            } else { // count === 2
-                numberOfTeams = 2;
-                elements.team3.panel.style.display = 'none';
-                elements.teamsGrid.classList.add('lg:grid-cols-2');
-                elements.teamsGrid.classList.remove('lg:grid-cols-3');
-                elements.set2TeamsBtn.classList.add('bg-blue-600', 'border-blue-400');
-                elements.set2TeamsBtn.classList.remove('bg-gray-700', 'border-transparent');
-                elements.set3TeamsBtn.classList.remove('bg-blue-600', 'border-blue-400');
-                elements.set3TeamsBtn.classList.add('bg-gray-700', 'border-transparent');
-            }
-            updateAllTeamUIs();
-        }
-
-        // --- Event Listeners ---
-        elements.team1.name.addEventListener('input', (e) => { teams[1].name = e.target.value; });
-        elements.team2.name.addEventListener('input', (e) => { teams[2].name = e.target.value; });
-        elements.team3.name.addEventListener('input', (e) => { if(teams[3]) teams[3].name = e.target.value; });
-        elements.team1.color.addEventListener('input', (e) => { teams[1].color = e.target.value; updateTeamUI(1); });
-        elements.team2.color.addEventListener('input', (e) => { teams[2].color = e.target.value; updateTeamUI(2); });
-        elements.team3.color.addEventListener('input', (e) => { if(teams[3]) { teams[3].color = e.target.value; updateTeamUI(3); }});
-        elements.team1.manualScore.addEventListener('keydown', (e) => handleManualScore(e, 1));
-        elements.team2.manualScore.addEventListener('keydown', (e) => handleManualScore(e, 2));
-        elements.team3.manualScore.addEventListener('keydown', (e) => handleManualScore(e, 3));
-        elements.team1.rfidInput.addEventListener('keydown', (e) => handleRfidInput(e, 1));
-        elements.team2.rfidInput.addEventListener('keydown', (e) => handleRfidInput(e, 2));
-        elements.team3.rfidInput.addEventListener('keydown', (e) => handleRfidInput(e, 3));
-
-        elements.set2TeamsBtn.addEventListener('click', () => setupTeams(2));
-        elements.set3TeamsBtn.addEventListener('click', () => setupTeams(3));
-        
-        elements.closeAlertButton.addEventListener('click', closeCustomAlert);
-        elements.closeGambleButton.addEventListener('click', closeGambleModal);
-        elements.summaryButton.addEventListener('click', handleSummary);
-        elements.closeSummaryButton.addEventListener('click', closeSummaryModal);
-        elements.resetGameButton.addEventListener('click', handleResetGame);
-        elements.trollRobinhoodButton.addEventListener('click', handleRobinHood);
-        elements.trollBlindBetButton.addEventListener('click', handleBlindBet);
-        elements.trollRandomButton.addEventListener('click', handleRandomEventButton);
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const title = "TEAM BATTLE";
-            const titleContainer = elements.mainTitle;
-            title.split('').forEach((char, i) => {
-                const span = document.createElement('span');
-                span.textContent = char === ' ' ? '\u00A0' : char;
-                span.className = 'title-char';
-                span.style.animationDelay = `${i * 0.1}s`;
-                titleContainer.appendChild(span);
-            });
-            
-            initializeTeamStatuses();
-            updateAllTeamUIs();
-            updateBankUI();
-            renderBattleLog();
-            elements.team1.rfidInput.focus();
-            
-            setInterval(triggerRandomEvent, Math.floor(Math.random() * 60000) + 60000);
+      }
+      playCorrect() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.15); // G5
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+      playWrong() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+      playTick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      }
+      playFanfare() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [440, 554.37, 659.25, 880];
+        notes.forEach((freq, idx) => {
+          const now = this.ctx.currentTime + (idx * 0.08);
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
         });
-    </script>
+      }
+      playPenalty() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, now);
+        osc.frequency.linearRampToValueAtTime(70, now + 0.4);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      }
+    }
+
+    const sound = new SoundEngine();
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+
+    soundToggleBtn.addEventListener('click', () => {
+      sound.enabled = !sound.enabled;
+      if (sound.enabled) {
+        soundIcon.className = "fa-solid fa-volume-high";
+        soundToggleBtn.classList.remove('text-rose-400');
+        soundToggleBtn.classList.add('text-slate-300');
+      } else {
+        soundIcon.className = "fa-solid fa-volume-xmark";
+        soundToggleBtn.classList.remove('text-slate-300');
+        soundToggleBtn.classList.add('text-rose-400');
+      }
+    });
+
+    /* =========================================================
+       4. QUESTION DISPLAY & EVALUATION (16:9 Big Typography)
+       ========================================================= */
+    const choiceLabels = ['ก.', 'ข.', 'ค.'];
+
+    function loadQuestion(index) {
+      if (index >= TOTAL_QUESTIONS) {
+        endGame("ตอบครบหมดทั้ง 40 ข้อ ยอดเยี่ยมมาก!");
+        return;
+      }
+
+      gameState.isAnsweringLocked = false;
+      answerFeedback.classList.add('hidden');
+      const q = gameState.questions[index];
+
+      questionText.innerHTML = `<span class="text-cyan-400 font-mono font-bold mr-2 text-2xl sm:text-3xl">ข้อ ${index + 1}:</span> ${q.question}`;
+      choicesContainer.innerHTML = '';
+
+      q.choices.forEach((choice, i) => {
+        const btn = document.createElement('button');
+        btn.className = "flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border-2 border-slate-700 hover:border-cyan-400 text-left transition-all duration-150 group font-medium text-slate-100 active:scale-[0.99] shadow-md w-full";
+        btn.innerHTML = `
+          <div class="flex items-center gap-3 sm:gap-4 w-full">
+            <span class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-950 border-2 border-slate-700 flex items-center justify-center text-base sm:text-xl font-black font-mono text-cyan-400 group-hover:border-cyan-400 shrink-0">
+              ${choiceLabels[i]}
+            </span>
+            <span class="text-xl sm:text-2xl md:text-3xl font-mono font-bold text-white tracking-wide">${choice} ${q.unit}</span>
+          </div>
+          <i class="hidden sm:inline-block fa-solid fa-arrow-right text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all text-lg sm:text-xl shrink-0"></i>
+        `;
+        btn.addEventListener('click', () => handleChoiceSelect(choice, q.ans, btn, q.explanation));
+        choicesContainer.appendChild(btn);
+      });
+
+      updateHUD();
+    }
+
+    function handleChoiceSelect(selected, correct, chosenBtn, explanation) {
+      if (gameState.isAnsweringLocked || !gameState.isGameActive) return;
+      gameState.isAnsweringLocked = true;
+
+      const isCorrect = (selected === correct);
+
+      // Style choices
+      const allButtons = choicesContainer.querySelectorAll('button');
+      allButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.remove('hover:bg-slate-800', 'hover:border-cyan-400');
+      });
+
+      if (isCorrect) {
+        sound.playCorrect();
+        chosenBtn.classList.remove('bg-slate-900/90', 'border-slate-700');
+        chosenBtn.classList.add('bg-emerald-950', 'border-emerald-500', 'text-emerald-100', 'shadow-xl', 'shadow-emerald-950/80');
+
+        // Score logic: +5 for correct
+        gameState.score += 5;
+        gameState.correctCount++;
+        gameState.consecutiveCorrect++;
+
+        // Feedback banner
+        answerFeedback.className = "mt-3 p-3.5 rounded-2xl text-base sm:text-lg font-bold flex flex-col sm:flex-row items-center justify-between bg-emerald-950/90 border-2 border-emerald-500 text-emerald-200";
+        feedbackText.innerHTML = `<span><i class="fa-solid fa-circle-check text-emerald-400 mr-2 text-xl"></i><b>ถูกต้อง! +5 คะแนน</b></span>`;
+        feedbackExplanation.textContent = `วิธีคิด: ${explanation}`;
+        answerFeedback.classList.remove('hidden');
+
+      } else {
+        sound.playWrong();
+        chosenBtn.classList.remove('bg-slate-900/90', 'border-slate-700');
+        chosenBtn.classList.add('bg-rose-950', 'border-rose-500', 'text-rose-100', 'shadow-xl', 'shadow-rose-950/80');
+
+        // Highlight correct button
+        allButtons.forEach(btn => {
+          if (btn.innerText.includes(`${correct}`)) {
+            btn.classList.add('border-emerald-500', 'bg-emerald-950/50');
+          }
+        });
+
+        // Score logic: -10 for wrong
+        gameState.score -= 10;
+        gameState.wrongCount++;
+        gameState.consecutiveCorrect = 0; // Reset streak
+
+        // Feedback banner
+        answerFeedback.className = "mt-3 p-3.5 rounded-2xl text-base sm:text-lg font-bold flex flex-col sm:flex-row items-center justify-between bg-rose-950/90 border-2 border-rose-500 text-rose-200";
+        feedbackText.innerHTML = `<span><i class="fa-solid fa-circle-xmark text-rose-400 mr-2 text-xl"></i><b>ตอบผิด! -10 คะแนน</b></span>`;
+        feedbackExplanation.textContent = `เฉลย: ${explanation}`;
+        answerFeedback.classList.remove('hidden');
+      }
+
+      updateHUD();
+
+      // Check for Wheel Trigger: Every 2 correct answers
+      const triggerWheel = isCorrect && (gameState.consecutiveCorrect >= 2);
+
+      setTimeout(() => {
+        if (!gameState.isGameActive) return;
+
+        if (triggerWheel) {
+          gameState.consecutiveCorrect = 0; // Reset streak
+          updateHUD();
+          openWheelModal();
+        } else {
+          gameState.currentIndex++;
+          loadQuestion(gameState.currentIndex);
+        }
+      }, 1400);
+    }
+
+    /* =========================================================
+       5. WHEEL SYSTEM WITH REQUIRED EXACT PROBABILITIES
+       ========================================================= */
+    // Helper: generate nice clean thermal equilibrium problems
+    function generateThermalQuestionPool(count = 40) {
+      const questions = [];
+      
+      // We will generate combinations where water (c=1) or liquids with same c are mixed:
+      // m1(T1 - T) = m2(T - T2) => T = (m1*T1 + m2*T2)/(m1 + m2)
+      // All designed to produce integer answers or clean simple deductions.
+      
+      const templates = [
+        // Case 1: Equal masses m1 = m2 => T = (T1 + T2)/2
+        {
+          gen: () => {
+            const m = [50, 100, 150, 200, 300][Math.floor(Math.random() * 5)];
+            const step = (Math.floor(Math.random() * 6) + 2) * 10; // 20 to 70
+            const T2 = (Math.floor(Math.random() * 3) + 1) * 10; // 10, 20, 30
+            const T1 = T2 + step;
+            const ans = (T1 + T2) / 2;
+            return {
+              text: `ผสมน้ำมวล <b class="text-cyan-300">${m} g</b> อุณหภูมิ <b class="text-rose-400">${T1} °C</b> กับน้ำมวล <b class="text-cyan-300">${m} g</b> อุณหภูมิ <b class="text-blue-300">${T2} °C</b> ในภาชนะฉนวนความร้อน จงหาอุณหภูมิผสมสุดท้าย?`,
+              ans: ans,
+              unit: "°C",
+              explanation: `มวลเท่ากัน (${m} g): T_ผสม = (${T1} + ${T2}) / 2 = ${ans} °C`
+            };
+          }
+        },
+        // Case 2: Ratio 2:1 mass => m1=200, m2=100
+        {
+          gen: () => {
+            const ratios = [
+              { m1: 200, m2: 100, T1: 70, T2: 10, ans: 50 }, // (2*70 + 1*10)/3 = 150/3 = 50
+              { m1: 200, m2: 100, T1: 80, T2: 20, ans: 60 }, // (160 + 20)/3 = 60
+              { m1: 100, m2: 200, T1: 90, T2: 30, ans: 50 }, // (90 + 60)/3 = 50
+              { m1: 200, m2: 100, T1: 60, T2: 30, ans: 50 }, // (120+30)/3 = 50
+              { m1: 300, m2: 100, T1: 60, T2: 20, ans: 50 }, // (180+20)/4 = 50
+              { m1: 100, m2: 300, T1: 100, T2: 20, ans: 40 }, // (100+60)/4 = 40
+              { m1: 300, m2: 100, T1: 80, T2: 40, ans: 70 }, // (240+40)/4 = 70
+              { m1: 200, m2: 300, T1: 80, T2: 30, ans: 50 }, // (160+90)/5 = 50
+              { m1: 150, m2: 150, T1: 90, T2: 10, ans: 50 },
+              { m1: 200, m2: 200, T1: 75, T2: 25, ans: 50 }
+            ];
+            const item = ratios[Math.floor(Math.random() * ratios.length)];
+            return {
+              text: `นำน้ำร้อน <b class="text-rose-400">${item.m1} g</b> ที่ <b class="text-rose-400">${item.T1} °C</b> ผสมกับน้ำเย็น <b class="text-blue-300">${item.m2} g</b> ที่ <b class="text-blue-300">${item.T2} °C</b> เมื่อเกิดสมดุลความร้อน อุณหภูมิผสมจะเป็นกี่ °C?`,
+              ans: item.ans,
+              unit: "°C",
+              explanation: `Q_ลด = Q_เพิ่ม : ${item.m1}(${item.T1} - T) = ${item.m2}(T - ${item.T2}) ➔ T = ${item.ans} °C`
+            };
+          }
+        },
+        // Case 3: Finding Unknown Mass (m1)
+        {
+          gen: () => {
+            const list = [
+              { m1Ans: 100, T1: 80, m2: 200, T2: 20, T_mix: 40 }, // m1*(40) = 200*(20) -> m1=100
+              { m1Ans: 200, T1: 90, m2: 100, T2: 30, T_mix: 70 }, // m1*(20) = 100*(40) -> m1=200
+              { m1Ans: 150, T1: 70, m2: 150, T2: 30, T_mix: 50 }, // m1=150
+              { m1Ans: 300, T1: 80, m2: 100, T2: 40, T_mix: 70 }, // m1*(10) = 100*(30) -> m1=300
+              { m1Ans: 50,  T1: 90, m2: 150, T2: 10, T_mix: 30 }, // m1*(60) = 150*(20) -> m1=50
+            ];
+            const p = list[Math.floor(Math.random() * list.length)];
+            return {
+              text: `เทน้ำร้อนอุณหภูมิ <b class="text-rose-400">${p.T1} °C</b> (มวล m) ลงในน้ำเย็นมวล <b class="text-blue-300">${p.m2} g</b> ที่ <b class="text-blue-300">${p.T2} °C</b> จนได้อุณหภูมิสุดท้ายที่ <b class="text-emerald-400">${p.T_mix} °C</b> จงหามวล m ของน้ำร้อน?`,
+              ans: p.m1Ans,
+              unit: "g",
+              explanation: `m(${p.T1} - ${p.T_mix}) = ${p.m2}(${p.T_mix} - ${p.T2}) ➔ m = ${p.m1Ans} g`
+            };
+          }
+        },
+        // Case 4: Finding Initial Temperature (T1)
+        {
+          gen: () => {
+            const list = [
+              { m1: 100, T1Ans: 80, m2: 100, T2: 20, T_mix: 50 },
+              { m1: 200, T1Ans: 90, m2: 100, T2: 30, T_mix: 70 },
+              { m1: 100, T1Ans: 70, m2: 200, T2: 40, T_mix: 50 },
+              { m1: 150, T1Ans: 100, m2: 150, T2: 20, T_mix: 60 },
+              { m1: 100, T1Ans: 60, m2: 100, T2: 20, T_mix: 40 }
+            ];
+            const p = list[Math.floor(Math.random() * list.length)];
+            return {
+              text: `น้ำมวล <b class="text-cyan-300">${p.m1} g</b> ที่อุณหภูมิเริ่มต้น <b class="text-amber-300">T₁</b> ผสมกับน้ำมวล <b class="text-cyan-300">${p.m2} g</b> ที่ <b class="text-blue-300">${p.T2} °C</b> ได้อุณหภูมิผสมเป็น <b class="text-emerald-400">${p.T_mix} °C</b> อุณหภูมิ T₁ มีค่าเท่าใด?`,
+              ans: p.T1Ans,
+              unit: "°C",
+              explanation: `${p.m1}(T₁ - ${p.T_mix}) = ${p.m2}(${p.T_mix} - ${p.T2}) ➔ T₁ = ${p.T1Ans} °C`
+            };
+          }
+        },
+        // Case 5: Different specific heat capacity c (Clean integers)
+        {
+          gen: () => {
+            const items = [
+              { m1: 100, c1: 0.5, T1: 90, m2: 100, c2: 1, T2: 30, ans: 50 }, // 100*0.5*(90-T) = 50(90-T); 100*1*(T-30) -> 50*90 + 100*30 = 7500 / 150 = 50
+              { m1: 200, c1: 0.2, T1: 100, m2: 60, c2: 1, T2: 20, ans: 52 }, // 40*(100-T) = 60*(T-20) -> 4000+1200 = 5200 / 100 = 52
+              { m1: 100, c1: 0.2, T1: 80, m2: 40, c2: 1, T2: 20, ans: 40 },  // 20*(80-T) = 40*(T-20) -> 1600+800=2400/60 = 40
+              { m1: 200, c1: 0.5, T1: 80, m2: 100, c2: 1, T2: 20, ans: 50 }, // 100*(80-T) = 100*(T-20) -> T=50
+              { m1: 50,  c1: 0.4, T1: 90, m2: 80, c2: 1, T2: 40, ans: 50 },  // 20*(90-T) = 80*(T-40) -> 1800+3200=5000/100 = 50
+            ];
+            const p = items[Math.floor(Math.random() * items.length)];
+            return {
+              text: `โลหะมวล <b class="text-amber-300">${p.m1} g</b> (c = <b class="text-yellow-300">${p.c1} cal/g·°C</b>) อุณหภูมิ <b class="text-rose-400">${p.T1} °C</b> หย่อนลงในน้ำ <b class="text-cyan-300">${p.m2} g</b> ที่ <b class="text-blue-300">${p.T2} °C</b> (c_น้ำ = 1 cal/g·°C) อุณหภูมิผสมเป็นเท่าใด?`,
+              ans: p.ans,
+              unit: "°C",
+              explanation: `(${p.m1})(${p.c1})(${p.T1} - T) = (${p.m2})(1)(T - ${p.T2}) ➔ T = ${p.ans} °C`
+            };
+          }
+        }
+      ];
+
+      for (let i = 0; i < count; i++) {
+        const tmpl = templates[i % templates.length];
+        const qData = tmpl.gen();
+        
+        // Generate 2 plausible distractor choices (Total 3 choices: 1 correct + 2 distractors)
+        const correctVal = qData.ans;
+        const distractors = new Set();
+        
+        const offsetSteps = [5, 10, -5, -10, 15, -15, 20, -20];
+        // Shuffle offsets
+        offsetSteps.sort(() => Math.random() - 0.5);
+
+        for (let off of offsetSteps) {
+          const fake = correctVal + off;
+          if (fake > 0 && fake !== correctVal) {
+            distractors.add(fake);
+          }
+          if (distractors.size === 2) break;
+        }
+
+        // In case not enough, fill fallback
+        while (distractors.size < 2) {
+          const fake = correctVal + (distractors.size + 1) * 5;
+          distractors.add(fake);
+        }
+
+        const choices = Array.from(distractors);
+        choices.push(correctVal);
+        choices.sort(() => Math.random() - 0.5); // Shuffle 3 choices
+
+        questions.push({
+          id: i + 1,
+          question: qData.text,
+          ans: correctVal,
+          unit: qData.unit,
+          choices: choices,
+          explanation: qData.explanation
+        });
+      }
+
+      // Shuffle entire 40 questions order
+      return questions.sort(() => Math.random() - 0.5);
+    }
+
+    /* =========================================================
+       3. GAME STATE MANAGEMENT
+       ========================================================= */
+    const TOTAL_QUESTIONS = 40;
+    const TOTAL_SECONDS = 120; // 2 minutes
+
+    let gameState = {
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      correctCount: 0,
+      wrongCount: 0,
+      consecutiveCorrect: 0, // Triggers wheel every 2
+      wheelSpins: 0,
+      timeLeft: TOTAL_SECONDS,
+      timerId: null,
+      isAnsweringLocked: false,
+      isGameActive: false
+    };
+
+    // DOM Elements
+    const startScreen = document.getElementById('startScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const startGameBtn = document.getElementById('startGameBtn');
+    const restartGameBtn = document.getElementById('restartGameBtn');
+
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timeProgressBar = document.getElementById('timeProgressBar');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const currentQNum = document.getElementById('currentQNum');
+    const streakDot1 = document.getElementById('streakDot1');
+    const streakDot2 = document.getElementById('streakDot2');
+
+    const questionText = document.getElementById('questionText');
+    const choicesContainer = document.getElementById('choicesContainer');
+    const answerFeedback = document.getElementById('answerFeedback');
+    const feedbackText = document.getElementById('feedbackText');
+    const feedbackExplanation = document.getElementById('feedbackExplanation');
+
+    // Start Game Handler
+    startGameBtn.addEventListener('click', startGame);
+    restartGameBtn.addEventListener('click', startGame);
+
+    function startGame() {
+      // Audio activation on user gesture
+      sound.init();
+
+      // Reset state
+      gameState.questions = generateThermalQuestionPool(TOTAL_QUESTIONS);
+      gameState.currentIndex = 0;
+      gameState.score = 0;
+      gameState.correctCount = 0;
+      gameState.wrongCount = 0;
+      gameState.consecutiveCorrect = 0;
+      gameState.wheelSpins = 0;
+      gameState.timeLeft = TOTAL_SECONDS;
+      gameState.isAnsweringLocked = false;
+      gameState.isGameActive = true;
+
+      // Update UI
+      startScreen.classList.add('hidden');
+      gameOverScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      gameScreen.classList.add('flex');
+
+      updateHUD();
+      loadQuestion(gameState.currentIndex);
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(gameState.timerId);
+      updateTimerUI();
+
+      gameState.timerId = setInterval(() => {
+        if (!gameState.isGameActive) return;
+        gameState.timeLeft--;
+        updateTimerUI();
+
+        if (gameState.timeLeft <= 0) {
+          endGame("หมดเวลา 2 นาที (120 วินาที)");
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const mins = Math.floor(gameState.timeLeft / 60);
+      const secs = gameState.timeLeft % 60;
+      timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      
+      const pct = (gameState.timeLeft / TOTAL_SECONDS) * 100;
+      timeProgressBar.style.width = `${pct}%`;
+
+      if (gameState.timeLeft <= 20) {
+        timerDisplay.classList.add('text-rose-500', 'animate-pulse');
+        timeProgressBar.classList.add('from-rose-500', 'to-red-600');
+      } else {
+        timerDisplay.classList.remove('text-rose-500', 'animate-pulse');
+      }
+    }
+
+    function updateHUD() {
+      scoreDisplay.textContent = gameState.score;
+      currentQNum.textContent = Math.min(gameState.currentIndex + 1, TOTAL_QUESTIONS);
+
+      // Consecutive correct lights (every 2 correct triggers wheel)
+      const c = gameState.consecutiveCorrect;
+      if (c === 0) {
+        streakDot1.className = "w-4 h-4 rounded-full border border-slate-600 bg-slate-800 transition-colors";
+        streakDot2.className = "w-4 h-4 rounded-full border border-slate-600 bg-slate-800 transition-colors";
+      } else if (c === 1) {
+        streakDot1.className = "w-4 h-4 rounded-full border border-amber-400 bg-amber-400 shadow-sm shadow-amber-400 transition-colors";
+        streakDot2.className = "w-4 h-4 rounded-full border border-slate-600 bg-slate-800 transition-colors";
+      } else {
+        streakDot1.className = "w-4 h-4 rounded-full border border-amber-400 bg-amber-400 shadow-sm shadow-amber-400 transition-colors";
+        streakDot2.className = "w-4 h-4 rounded-full border border-amber-400 bg-amber-400 shadow-sm shadow-amber-400 transition-colors";
+      }
+    }
+
+    /* =========================================================
+       4. QUESTION DISPLAY & EVALUATION
+       ========================================================= */
+    const choiceLabels = ['ก.', 'ข.', 'ค.', 'ง.'];
+
+    function loadQuestion(index) {
+      if (index >= TOTAL_QUESTIONS) {
+        endGame("ตอบครบหมดทั้ง 40 ข้อ ยอดเยี่ยมมาก!");
+        return;
+      }
+
+      gameState.isAnsweringLocked = false;
+      answerFeedback.classList.add('hidden');
+      const q = gameState.questions[index];
+
+      questionText.innerHTML = `<span class="text-cyan-400 font-mono mr-2">Q${index + 1}:</span> ${q.question}`;
+      choicesContainer.innerHTML = '';
+
+      q.choices.forEach((choice, i) => {
+        const btn = document.createElement('button');
+        btn.className = "flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-cyan-500 text-left transition-all duration-150 group font-medium text-slate-200 active:scale-[0.98]";
+        btn.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-xs font-bold font-mono text-cyan-400 group-hover:border-cyan-400">
+              ${choiceLabels[i]}
+            </span>
+            <span class="text-lg font-mono">${choice} ${q.unit}</span>
+          </div>
+          <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-cyan-400 transition-colors text-xs"></i>
+        `;
+        btn.addEventListener('click', () => handleChoiceSelect(choice, q.ans, btn, q.explanation));
+        choicesContainer.appendChild(btn);
+      });
+
+      updateHUD();
+    }
+
+    function handleChoiceSelect(selected, correct, chosenBtn, explanation) {
+      if (gameState.isAnsweringLocked || !gameState.isGameActive) return;
+      gameState.isAnsweringLocked = true;
+
+      const isCorrect = (selected === correct);
+
+      // Style choices
+      const allButtons = choicesContainer.querySelectorAll('button');
+      allButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.remove('hover:bg-slate-700/80', 'hover:border-cyan-500');
+      });
+
+      if (isCorrect) {
+        sound.playCorrect();
+        chosenBtn.classList.remove('bg-slate-800/80', 'border-slate-700');
+        chosenBtn.classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200', 'shadow-lg', 'shadow-emerald-950');
+
+        // Score logic: +5 for correct
+        gameState.score += 5;
+        gameState.correctCount++;
+        gameState.consecutiveCorrect++;
+
+        // Feedback banner
+        answerFeedback.className = "mt-5 p-3 rounded-xl text-sm font-medium flex flex-col sm:flex-row items-center justify-between bg-emerald-950/80 border border-emerald-600/60 text-emerald-300";
+        feedbackText.innerHTML = `<span><i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i><b>ถูกต้อง! +5 คะแนน</b></span>`;
+        feedbackExplanation.textContent = explanation;
+        answerFeedback.classList.remove('hidden');
+
+      } else {
+        sound.playWrong();
+        chosenBtn.classList.remove('bg-slate-800/80', 'border-slate-700');
+        chosenBtn.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200', 'shadow-lg', 'shadow-rose-950');
+
+        // Highlight correct button
+        allButtons.forEach(btn => {
+          if (btn.innerText.includes(`${correct}`)) {
+            btn.classList.add('border-emerald-500', 'bg-emerald-950/40');
+          }
+        });
+
+        // Score logic: -10 for wrong
+        gameState.score -= 10;
+        gameState.wrongCount++;
+        gameState.consecutiveCorrect = 0; // Reset streak
+
+        // Feedback banner
+        answerFeedback.className = "mt-5 p-3 rounded-xl text-sm font-medium flex flex-col sm:flex-row items-center justify-between bg-rose-950/80 border border-rose-600/60 text-rose-300";
+        feedbackText.innerHTML = `<span><i class="fa-solid fa-circle-xmark text-rose-400 mr-2"></i><b>ตอบผิด! -10 คะแนน</b></span>`;
+        feedbackExplanation.textContent = explanation;
+        answerFeedback.classList.remove('hidden');
+      }
+
+      updateHUD();
+
+      // Check for Wheel Trigger: Every 2 correct answers
+      const triggerWheel = isCorrect && (gameState.consecutiveCorrect >= 2);
+
+      setTimeout(() => {
+        if (!gameState.isGameActive) return;
+
+        if (triggerWheel) {
+          gameState.consecutiveCorrect = 0; // Reset streak
+          updateHUD();
+          openWheelModal();
+        } else {
+          gameState.currentIndex++;
+          loadQuestion(gameState.currentIndex);
+        }
+      }, 1300);
+    }
+
+    /* =========================================================
+       5. WHEEL SYSTEM WITH REQUIRED EXACT PROBABILITIES
+       Rule:
+       - 20% Chance: Score Bonus (Green/Gold)
+       - 60% Chance: Score Penalty / Negative (Red/Orange)
+       - 20% Chance: Neutral / Small (Blue/Slate)
+       - Option: Skip wheel by losing 5 points
+       ========================================================= */
+    const wheelModal = document.getElementById('wheelModal');
+    const wheelCanvas = document.getElementById('wheelCanvas');
+    const spinWheelBtn = document.getElementById('spinWheelBtn');
+    const skipWheelBtn = document.getElementById('skipWheelBtn');
+    const continueAfterWheelBtn = document.getElementById('continueAfterWheelBtn');
+    const wheelResultBanner = document.getElementById('wheelResultBanner');
+    const wheelButtonsGroup = document.getElementById('wheelButtonsGroup');
+    const ctxWheel = wheelCanvas.getContext('2d');
+
+    // 10 Segments (each 36 degrees for equal visual slices):
+    // Distribution:
+    // 2 segments Bonus (+20, +15) = 2/10 = 20%
+    // 6 segments Penalty (-15, -20, -25, -30, -10, -15) = 6/10 = 60%
+    // 2 segments Neutral (+0, +2) = 2/10 = 20%
+    const WHEEL_SEGMENTS = [
+      { label: "+20 แต้ม", value: 20, type: "bonus", bg: "#10b981", text: "#022c22" },    // 1. Bonus
+      { label: "-20 แต้ม", value: -20, type: "penalty", bg: "#e11d48", text: "#ffffff" }, // 2. Penalty
+      { label: "เสมอตัว (+0)", value: 0, type: "neutral", bg: "#0284c7", text: "#ffffff" },// 3. Neutral
+      { label: "-15 แต้ม", value: -15, type: "penalty", bg: "#f43f5e", text: "#ffffff" }, // 4. Penalty
+      { label: "+15 แต้ม", value: 15, type: "bonus", bg: "#f59e0b", text: "#451a03" },    // 5. Bonus
+      { label: "-25 แต้ม", value: -25, type: "penalty", bg: "#be123c", text: "#ffffff" }, // 6. Penalty
+      { label: "+2 แต้ม",  value: 2,  type: "neutral", bg: "#38bdf8", text: "#082f49" },  // 7. Neutral
+      { label: "-30 แต้ม", value: -30, type: "penalty", bg: "#9f1239", text: "#ffffff" }, // 8. Penalty
+      { label: "-10 แต้ม", value: -10, type: "penalty", bg: "#fb7185", text: "#4c0519" }, // 9. Penalty
+      { label: "-15 แต้ม", value: -15, type: "penalty", bg: "#e11d48", text: "#ffffff" }  // 10. Penalty
+    ];
+    // Breakdown validation:
+    // Bonus: index 0, 4 => 2/10 = 20%
+    // Penalty: index 1, 3, 5, 7, 8, 9 => 6/10 = 60%
+    // Neutral: index 2, 6 => 2/10 = 20%
+    // Perfect match with requirements!
+
+    let wheelCurrentRotation = 0;
+    let isSpinning = false;
+
+    function drawWheel(angleOffset = 0) {
+      const numSegments = WHEEL_SEGMENTS.length;
+      const arc = (2 * Math.PI) / numSegments;
+      const cx = wheelCanvas.width / 2;
+      const cy = wheelCanvas.height / 2;
+      const radius = cx - 10;
+
+      ctxWheel.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+      for (let i = 0; i < numSegments; i++) {
+        const seg = WHEEL_SEGMENTS[i];
+        const angle = angleOffset + (i * arc);
+
+        // Draw Sector
+        ctxWheel.beginPath();
+        ctxWheel.fillStyle = seg.bg;
+        ctxWheel.moveTo(cx, cy);
+        ctxWheel.arc(cx, cy, radius, angle, angle + arc);
+        ctxWheel.closePath();
+        ctxWheel.fill();
+
+        // Sector Border
+        ctxWheel.lineWidth = 2.5;
+        ctxWheel.strokeStyle = "#0f172a";
+        ctxWheel.stroke();
+
+        // Draw Text inside sector (Enlarged font)
+        ctxWheel.save();
+        ctxWheel.translate(cx, cy);
+        ctxWheel.rotate(angle + arc / 2);
+        ctxWheel.textAlign = "right";
+        ctxWheel.fillStyle = seg.text;
+        ctxWheel.font = "bold 15px 'Kanit', sans-serif";
+        ctxWheel.fillText(seg.label, radius - 18, 5);
+        ctxWheel.restore();
+      }
+
+      // Outer ring
+      ctxWheel.beginPath();
+      ctxWheel.arc(cx, cy, radius, 0, 2 * Math.PI);
+      ctxWheel.lineWidth = 7;
+      ctxWheel.strokeStyle = "#f59e0b";
+      ctxWheel.stroke();
+    }
+
+    drawWheel(wheelCurrentRotation);
+
+    function openWheelModal() {
+      wheelModal.classList.remove('hidden');
+      setTimeout(() => {
+        wheelModal.classList.remove('opacity-0');
+        document.getElementById('wheelModalBox').classList.remove('scale-95');
+        document.getElementById('wheelModalBox').classList.add('scale-100');
+      }, 10);
+
+      // Reset controls
+      spinWheelBtn.disabled = false;
+      skipWheelBtn.disabled = false;
+      wheelButtonsGroup.classList.remove('hidden');
+      continueAfterWheelBtn.classList.add('hidden');
+      wheelResultBanner.classList.add('hidden');
+      drawWheel(wheelCurrentRotation);
+    }
+
+    function closeWheelModal() {
+      wheelModal.classList.add('opacity-0');
+      document.getElementById('wheelModalBox').classList.remove('scale-100');
+      document.getElementById('wheelModalBox').classList.add('scale-95');
+
+      setTimeout(() => {
+        wheelModal.classList.add('hidden');
+        // Proceed to next question
+        gameState.currentIndex++;
+        loadQuestion(gameState.currentIndex);
+      }, 300);
+    }
+
+    // Spin Wheel Action
+    spinWheelBtn.addEventListener('click', () => {
+      if (isSpinning) return;
+      isSpinning = true;
+      spinWheelBtn.disabled = true;
+      skipWheelBtn.disabled = true;
+      gameState.wheelSpins++;
+
+      // Pick random outcome index (0-9 gives perfectly 20% bonus, 60% penalty, 20% neutral)
+      const targetIndex = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
+      const segArc = (2 * Math.PI) / WHEEL_SEGMENTS.length;
+
+      // Pointer is at the top (angle = 3 * Math.PI / 2 or -Math.PI / 2).
+      // We want segment `targetIndex` to align with the top arrow at the end.
+      const targetAngleCenter = (targetIndex * segArc) + (segArc / 2);
+      const topPointerAngle = 1.5 * Math.PI;
+      
+      // Calculate final target rotation (with at least 5-7 full spins)
+      const fullRotations = (5 + Math.floor(Math.random() * 3)) * (2 * Math.PI);
+      const desiredFinalOffset = topPointerAngle - targetAngleCenter;
+      
+      // Normalize current rotation
+      const normalizedCurrent = wheelCurrentRotation % (2 * Math.PI);
+      const targetRotation = wheelCurrentRotation + (2 * Math.PI - normalizedCurrent) + fullRotations + desiredFinalOffset;
+
+      const startAngle = wheelCurrentRotation;
+      const totalDelta = targetRotation - startAngle;
+      const duration = 4000; // 4 seconds animation
+      let startTime = null;
+      let lastTickSegment = -1;
+
+      function animateWheel(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Ease Out Cubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const currentAngle = startAngle + (totalDelta * ease);
+
+        drawWheel(currentAngle);
+
+        // Sound Tick when passing segments
+        const currentSegIndex = Math.floor(((topPointerAngle - currentAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) / segArc);
+        if (currentSegIndex !== lastTickSegment) {
+          sound.playTick();
+          lastTickSegment = currentSegIndex;
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animateWheel);
+        } else {
+          wheelCurrentRotation = targetRotation;
+          isSpinning = false;
+          handleWheelLanded(WHEEL_SEGMENTS[targetIndex]);
+        }
+      }
+
+      requestAnimationFrame(animateWheel);
+    });
+
+    function handleWheelLanded(segment) {
+      // Apply points
+      gameState.score += segment.value;
+      updateHUD();
+
+      // Visual feedback
+      wheelButtonsGroup.classList.add('hidden');
+      continueAfterWheelBtn.classList.remove('hidden');
+      wheelResultBanner.classList.remove('hidden');
+
+      if (segment.type === 'bonus') {
+        sound.playFanfare();
+        wheelResultBanner.className = "my-3 p-3 rounded-xl text-center font-bold text-base bg-emerald-950/80 border border-emerald-500 text-emerald-300";
+        wheelResultBanner.innerHTML = `<i class="fa-solid fa-gift text-emerald-400 mr-2"></i>ดวงดีสุดๆ! ได้รับคะแนนโบนัส <span class="text-xl text-emerald-200">+${segment.value} คะแนน</span>`;
+      } else if (segment.type === 'penalty') {
+        sound.playPenalty();
+        wheelResultBanner.className = "my-3 p-3 rounded-xl text-center font-bold text-base bg-rose-950/80 border border-rose-500 text-rose-300";
+        wheelResultBanner.innerHTML = `<i class="fa-solid fa-skull-crossbones text-rose-400 mr-2"></i>ตกช่องอันตราย (60%)! ถูกหักคะแนน <span class="text-xl text-rose-200">${segment.value} คะแนน</span>`;
+      } else {
+        sound.playTick();
+        wheelResultBanner.className = "my-3 p-3 rounded-xl text-center font-bold text-base bg-sky-950/80 border border-sky-500 text-sky-300";
+        wheelResultBanner.innerHTML = `<i class="fa-solid fa-scale-balanced text-sky-400 mr-2"></i>ผลลัพธ์แบบกลางๆ: <span class="text-xl text-sky-200">${segment.label}</span>`;
+      }
+    }
+
+    // Skip Wheel Option (Deducts 5 points)
+    skipWheelBtn.addEventListener('click', () => {
+      if (isSpinning) return;
+      sound.playWrong();
+
+      // Rule: Deduct 5 points when skipping
+      gameState.score -= 5;
+      updateHUD();
+
+      wheelButtonsGroup.classList.add('hidden');
+      continueAfterWheelBtn.classList.remove('hidden');
+      wheelResultBanner.classList.remove('hidden');
+
+      wheelResultBanner.className = "my-3 p-3 rounded-xl text-center font-bold text-sm bg-slate-800 border border-amber-500/50 text-amber-300";
+      wheelResultBanner.innerHTML = `<i class="fa-solid fa-shield text-amber-400 mr-2"></i>คุณเลือกหลีกเลี่ยงความเสี่ยง: เสีย 5 คะแนนตามกติกา`;
+
+      setTimeout(() => {
+        closeWheelModal();
+      }, 1000);
+    });
+
+    continueAfterWheelBtn.addEventListener('click', () => {
+      closeWheelModal();
+    });
+
+    /* =========================================================
+       6. GAME OVER & SUMMARY
+       ========================================================= */
+    const finalScoreDisplay = document.getElementById('finalScoreDisplay');
+    const finalCorrectCount = document.getElementById('finalCorrectCount');
+    const finalWrongCount = document.getElementById('finalWrongCount');
+    const finalSpinCount = document.getElementById('finalSpinCount');
+    const gameOverReason = document.getElementById('gameOverReason');
+
+    function endGame(reason) {
+      gameState.isGameActive = false;
+      clearInterval(gameState.timerId);
+
+      // Hide wheel modal if open
+      wheelModal.classList.add('hidden');
+
+      // Update screen
+      gameScreen.classList.add('hidden');
+      gameScreen.classList.remove('flex');
+      gameOverScreen.classList.remove('hidden');
+
+      gameOverReason.textContent = reason;
+      finalScoreDisplay.textContent = gameState.score;
+      finalCorrectCount.textContent = gameState.correctCount;
+      finalWrongCount.textContent = gameState.wrongCount;
+      finalSpinCount.textContent = gameState.wheelSpins;
+
+      if (gameState.score >= 50) {
+        sound.playFanfare();
+        finalScoreDisplay.className = "font-mono text-5xl font-black text-emerald-400 mb-4";
+      } else if (gameState.score < 0) {
+        sound.playPenalty();
+        finalScoreDisplay.className = "font-mono text-5xl font-black text-rose-400 mb-4";
+      } else {
+        sound.playTick();
+        finalScoreDisplay.className = "font-mono text-5xl font-black text-cyan-400 mb-4";
+      }
+    }
+  </script>
 </body>
 </html>
-
